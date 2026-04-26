@@ -19,11 +19,55 @@ export { SinDelegate } from './agents/sin_delegate.js';
 export { SinSwarm } from './agents/sin_swarm.js';
 export { SinMonitor } from './agents/sin_monitor.js';
 
+// Cognitive Assembly Line - Research Swarm
+export { Athena, Argus, Daedalus, Hermes, ResearchSwarm } from './agents/research_swarm.js';
+
+// Cognitive Assembly Line - Planning Swarm
+export { Prometheus, Metis, Themis, Apollo, PlanningSwarm } from './agents/planning_swarm.js';
+
+// Cognitive Assembly Line - Validation Superlayer
+export { Zeus, Aegis, Hephaestus, Chronos, Nemesis, ValidationSuperlayer } from './agents/validation_layer.js';
+
+// Cognitive Assembly Line - Execution Layer
+export { Atlas, Iris, Hades, Janus, Asclepius, ExecutionLayer } from './agents/execution_layer.js';
+
 // Git utilities
 export { GitOrchestrator } from './git/GitOrchestrator.js';
 
 // Health server
 export { HealthServer } from './health/HealthServer.js';
+
+// Advanced Features
+export { 
+  DynamicSkillInjector, 
+  ContextAwareRouter, 
+  SelfHealingExecutor, 
+  MultiModalVerifier, 
+  StateCheckpointManager,
+  AdvancedFeatures 
+} from './advanced/features.js';
+
+// Telemetry & Monitoring
+export {
+  TelemetryManager,
+  PrometheusExporter,
+  GrafanaDashboardGenerator,
+  FleetSync,
+  TelemetryModule,
+  type TelemetryEvent,
+  type AgentMetrics,
+  type FleetNode
+} from './advanced/telemetry.js';
+
+// State Machine
+export {
+  NativeStateMachine,
+  TaskQueueManager,
+  StateMachineModule,
+  type State,
+  type StateTransition,
+  type QueuedTask
+} from './advanced/state_machine.js';
 
 // Types
 export * from './types/index.js';
