@@ -45,10 +45,12 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
             const swarmRequest = input;
             // Policy check for swarm creation
             const policyCheck = await this.policyEngine.evaluate({
+                agentId: context.sessionId,
                 action: 'swarm.create',
                 resource: `swarm:${swarmRequest.name || context.taskId}`,
-                subject: context.sessionId,
-                context: {
+                capabilities: [],
+                timestamp: Date.now(),
+                metadata: {
                     agentCount: swarmRequest.agents?.length || 0,
                     orchestration: swarmRequest.orchestration,
                     workspace: context.workspace

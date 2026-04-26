@@ -24,7 +24,7 @@ export interface TaskContext {
     metadata?: Record<string, unknown>;
 }
 export interface AgentMessage {
-    type: 'request' | 'response' | 'error' | 'progress';
+    type: 'request' | 'response' | 'error' | 'progress' | 'task_queued';
     from: string;
     to: string;
     payload: unknown;
