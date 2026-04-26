@@ -54,12 +54,25 @@ export { HealthServer } from './health/HealthServer.js';
 // Advanced Features
 export { 
   DynamicSkillInjector, 
+  skillInjector,
   ContextAwareRouter, 
+  contextRouter,
   SelfHealingExecutor, 
+  selfHealingExecutorInstance as selfHealingExecutor,
   MultiModalVerifier, 
-  StateCheckpointManager,
+  StateCheckpointManager, 
   AdvancedFeatures 
 } from './advanced/features.js';
+
+// New Advanced Modules
+export {
+  SinHashEdit,
+  sinHashEdit,
+  type HashEdit,
+  type HashEditResult,
+  type FileSection,
+  CLI_HELP as HASH_EDIT_CLI_HELP
+} from './tools/sin_hash_edit.js';
 
 // Telemetry & Monitoring
 export {

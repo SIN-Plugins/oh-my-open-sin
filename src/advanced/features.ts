@@ -262,3 +262,8 @@ export const AdvancedFeatures = {
   MultiModalVerifier,
   StateCheckpointManager
 };
+
+// Singleton instances for convenience
+export const skillInjector = new DynamicSkillInjector();
+export const contextRouter = new ContextAwareRouter();
+export const selfHealingExecutorInstance = new SelfHealingExecutor(new AgentOrchestrator());
