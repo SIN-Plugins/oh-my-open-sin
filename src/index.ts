@@ -184,6 +184,34 @@ export {
   sinHealingDebugV2
 } from './tools/sin-healing-debug-v2.js';
 
+// Multi-Modal Verification v2
+export {
+  runVerificationGateV2,
+  type VerificationConfigV2,
+  type VerificationReportV2
+} from './utils/verification-gate-v2.js';
+
+export {
+  diffUIV2,
+  captureDOMStructure,
+  type UIDiffResultV2
+} from './utils/verifier-ui-v2.js';
+
+export {
+  runTestsV2,
+  type TestResultV2
+} from './utils/verifier-tests-v2.js';
+
+export {
+  runLSPV2,
+  type LSPResultV2
+} from './utils/verifier-lsp-v2.js';
+
+export {
+  SinVerifyDebug,
+  sinVerifyDebug
+} from './tools/sin-verify-debug.js';
+
 // State Machine
 export {
   NativeStateMachine,
