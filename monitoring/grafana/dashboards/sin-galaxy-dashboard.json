@@ -1,0 +1,261 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "sin-galaxy-core",
+    "title": "SIN Galaxy Core Dashboard",
+    "tags": ["sin", "galaxy", "telemetry"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "15s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Overall Health Score",
+        "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sin_overall_health",
+            "legendFormat": "Health"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 0.7},
+                {"color": "green", "value": 0.9}
+              ]
+            },
+            "unit": "percentunit"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "gauge",
+        "title": "Budget Usage %",
+        "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+        "targets": [
+          {
+            "expr": "sin_budget_pct",
+            "legendFormat": "Budget"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 80},
+                {"color": "red", "value": 100}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Total Cost (USD)",
+        "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+        "targets": [
+          {
+            "expr": "sin_telemetry_cost_usd",
+            "legendFormat": "Cost"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Chrome Healthy",
+        "gridPos": {"h": 4, "w": 3, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "sin_chrome_profiles_healthy",
+            "legendFormat": "Profiles"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "GitHub Auth",
+        "gridPos": {"h": 4, "w": 3, "x": 15, "y": 0},
+        "targets": [
+          {
+            "expr": "sin_github_app_auth_valid",
+            "legendFormat": "Auth"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "stat",
+        "title": "Proxy Reachable",
+        "gridPos": {"h": 4, "w": 3, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "sin_proxy_reachable",
+            "legendFormat": "Proxy"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "timeseries",
+        "title": "Tokens & Cost Over Time",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "rate(sin_telemetry_total_tokens[5m])",
+            "legendFormat": "Tokens/s"
+          },
+          {
+            "expr": "rate(sin_telemetry_cost_usd[5m])",
+            "legendFormat": "USD/s"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "type": "table",
+        "title": "Phase Breakdown",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "sin_telemetry_phase_runs",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "renameByName": {
+                "phase": "Phase",
+                "Value": "Runs"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "type": "stat",
+        "title": "Sync Drift (h)",
+        "gridPos": {"h": 4, "w": 4, "x": 0, "y": 12},
+        "targets": [
+          {
+            "expr": "sin_fleet_sync_drift_hours",
+            "legendFormat": "Drift"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 4}
+              ]
+            },
+            "unit": "h"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "stat",
+        "title": "Stale Sessions",
+        "gridPos": {"h": 4, "w": 4, "x": 4, "y": 12},
+        "targets": [
+          {
+            "expr": "sin_fleet_stale_sessions",
+            "legendFormat": "Stale"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "red", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "stat",
+        "title": "Proxy Latency (ms)",
+        "gridPos": {"h": 4, "w": 4, "x": 8, "y": 12},
+        "targets": [
+          {
+            "expr": "sin_proxy_latency_ms",
+            "legendFormat": "Latency"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 500},
+                {"color": "red", "value": 1000}
+              ]
+            },
+            "unit": "ms"
+          }
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}
