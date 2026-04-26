@@ -65,6 +65,43 @@ export {
   type SkillManifest
 } from './utils/skill-schema.js';
 
+// Context-Aware Routing v2
+export {
+  scanPaths,
+  type CodeMetrics
+} from './utils/ast-scanner.js';
+
+export {
+  classifyIntent,
+  type IntentCategory
+} from './utils/intent-classifier.js';
+
+export {
+  scoreAgents,
+  type AgentScore
+} from './utils/agent-scorer.js';
+
+export {
+  updateRoutingWeights,
+  syncWeightsFromTelemetry
+} from './utils/routing-feedback.js';
+
+export {
+  routeTaskV2,
+  type RoutingDecisionV2
+} from './utils/router-v2.js';
+
+// CLI Tools
+export {
+  SinSkillsCLI,
+  sinSkillsCLI
+} from './tools/sin-skills.js';
+
+export {
+  SinRouteDebug,
+  sinRouteDebug
+} from './tools/sin-route-debug.js';
+
 // Health server
 export { HealthServer } from './health/HealthServer.js';
 

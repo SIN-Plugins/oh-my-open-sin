@@ -68,6 +68,28 @@ async function doctor() {
   console.log("✅ Doctor complete.");
 }
 
+// Export functions for programmatic use
+export async function SinSkillsCLI(args: string[] = process.argv.slice(2)) {
+  const cmd = args[0];
+  switch (cmd) {
+    case "list":
+      await list();
+      break;
+    case "validate":
+      await validate(args[1] || ".");
+      break;
+    case "doctor":
+      await doctor();
+      break;
+    default:
+      console.log("Usage: sin-skills <list|validate|doctor> [path]");
+      process.exit(1);
+  }
+}
+
+export const sinSkillsCLI = SinSkillsCLI;
+
+// CLI entry point
 const cmd = process.argv[2];
 
 switch (cmd) {
