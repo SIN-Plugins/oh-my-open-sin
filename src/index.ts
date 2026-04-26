@@ -322,6 +322,40 @@ export {
   SinGalaxyManifestGen
 } from './bin/sin-galaxy-manifest-gen.js';
 
+// Enterprise Swarm Core - Issue #12
+export {
+  PolicyEngine,
+  getPolicyEngine,
+  type PolicyContext,
+  type PolicyDecision,
+  type PolicyRule
+} from './core/PolicyEngine.js';
+
+export {
+  SigstoreSigner,
+  getSigstoreSigner,
+  type SignOptions,
+  type SignatureResult,
+  type VerificationResult,
+  type SignedArtifact
+} from './core/SigstoreSigner.js';
+
+export {
+  NATSMessageBus,
+  getNATSMessageBus,
+  type Message,
+  type Subscription,
+  type MessageStats
+} from './core/NATSMessageBus.js';
+
+export {
+  DAGTaskScheduler,
+  getDAGTaskScheduler,
+  type Task,
+  type TaskStatus,
+  type ScheduleResult
+} from './core/DAGTaskScheduler.js';
+
 // State Machine
 export {
   NativeStateMachine,
