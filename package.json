@@ -8,7 +8,10 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "test": "node --test dist/**/*.test.js"
+    "test": "node --test dist/**/*.test.js",
+    "verify:provenance": "node scripts/verify-sigstore.mjs --bundle dist/result.sigstore.json --payload dist/result.json --strict",
+    "check:slo": "node scripts/slo-check.mjs --config slo-config.json --metrics-url http://localhost:9464/metrics --strict --json",
+    "check:slo:notify": "node scripts/slo-check.mjs --config slo-config.json --webhook https://hooks.slack.com/services/YOUR/WEBHOOK"
   },
   "keywords": [
     "opencode",
