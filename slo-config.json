@@ -1,0 +1,22 @@
+{
+  "slos": [
+    {
+      "name": "Agent Execution P95 Latency",
+      "metric": "agent_exec_duration_seconds_sum",
+      "threshold": 5.0,
+      "agent": null
+    },
+    {
+      "name": "Research Swarm Error Rate",
+      "metric": "agent_exec_errors_total",
+      "threshold": 2,
+      "agent": "athena"
+    },
+    {
+      "name": "Validation Superlayer Timeout Budget",
+      "metric": "agent_exec_duration_seconds_count",
+      "threshold": 100,
+      "agent": "zeus"
+    }
+  ]
+}

@@ -40,9 +40,10 @@ class SinDelegate extends SubAgent_js_1.SubAgent {
                 agentId: context.sessionId,
                 action: 'delegate.route',
                 resource: `task:${context.taskId}`,
-                capabilities: [],
+                capabilities: ['delegate', 'route'],
                 timestamp: Date.now(),
-                metadata: { taskType: task.type, workspace: context.workspace }
+                subject: context.sessionId,
+                context: { taskType: task.type, workspace: context.workspace }
             });
             if (!policyCheck.allowed) {
                 this.telemetry.recordEvent('delegate_policy_violation', {

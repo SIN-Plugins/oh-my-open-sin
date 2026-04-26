@@ -24,11 +24,11 @@ export interface TaskContext {
     metadata?: Record<string, unknown>;
     task?: {
         id: string;
-        description?: string;
+        [key: string]: any;
     };
 }
 export interface AgentMessage {
-    type: 'request' | 'response' | 'error' | 'progress' | 'task_queued';
+    type: 'request' | 'response' | 'error' | 'progress';
     from: string;
     to: string;
     payload: unknown;

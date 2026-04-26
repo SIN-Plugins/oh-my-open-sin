@@ -14,7 +14,7 @@ const BLACKBOARD_DIR = path.join(LOCAL_DIR, "swarm-blackboard");
 const HMAC_SECRET = process.env.SIN_HMAC_SECRET || "sin-galaxy-zero-trust";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────
-interface ClusterHealth {
+export interface ClusterHealth {
   id: string;
   domain: string;
   health: number; // 0-1
@@ -25,14 +25,14 @@ interface ClusterHealth {
   status: "healthy" | "degraded" | "critical" | "offline";
 }
 
-interface ConsensusVote {
+export interface ConsensusVote {
   cluster_id: string;
   decision: string;
   confidence: number;
   ts: number;
 }
 
-interface TelemetryAggregate {
+export interface TelemetryAggregate {
   total_tokens: number;
   total_cost_usd: number;
   avg_health: number;
@@ -42,7 +42,7 @@ interface TelemetryAggregate {
   ts: number;
 }
 
-interface RoutingDecision {
+export interface RoutingDecision {
   target_cluster: string;
   score: number;
   status: "allow" | "throttle" | "reroute" | "block";
@@ -50,7 +50,7 @@ interface RoutingDecision {
   budget_allocated: number;
 }
 
-interface FallbackPlan {
+export interface FallbackPlan {
   triggered: boolean;
   reason: string;
   action: "scope_reduce" | "model_downgrade" | "emergency_consensus" | "sub_galaxy_spawn";

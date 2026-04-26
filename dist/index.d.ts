@@ -51,7 +51,7 @@ export { loadFabricState, saveFabricState, safeRun, BudgetAllocator, RiskControl
 export { SinFabricWorldSync, sinFabricWorldSync, discoverFleet, reconcileBlackboard, aggregateAuditChains, propagatePatterns, broadcastToFleet } from './tools/sin-fabric-world-sync.js';
 export { SinFabricWorldInit, sinFabricWorldInit, initDirectories, initAuditChain, initPatternSeed, initFleetSSH, initDashboardAutoStart } from './tools/sin-fabric-world-init.js';
 export { SinFabricDashboard, sinFabricDashboard } from './tools/sin-fabric-dashboard.js';
-export { analyzeDomain, evaluateConstraints, enforceGravityPolicy, dispatchCrossPlanet, type RouteDecision, type GravityPolicy } from './bin/sin-planet-router.js';
+export { analyzeDomain, evaluateConstraints, enforceGravityPolicy, dispatchCrossPlanet, type RouteDecisionExport as RouteDecision, type GravityPolicy } from './bin/sin-planet-router.js';
 export { aggregateTelemetry, macroConsensus, gravitationalRoute, supernovaFallback, type ClusterHealth, type ConsensusVote, type TelemetryAggregate, type RoutingDecision, type FallbackPlan } from './bin/sin-galaxy-core.js';
 export { loadJSON as loadGalaxyManifest, SinGalaxyManifestGen } from './bin/sin-galaxy-manifest-gen.js';
 export { PolicyEngine, getPolicyEngine, type PolicyContext, type PolicyDecision, type PolicyRule } from './core/PolicyEngine.js';

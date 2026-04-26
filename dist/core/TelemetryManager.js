@@ -22,10 +22,10 @@ const sdk_node_1 = require("@opentelemetry/sdk-node");
 const exporter_prometheus_1 = require("@opentelemetry/exporter-prometheus");
 const instrumentation_http_1 = require("@opentelemetry/instrumentation-http");
 const semantic_conventions_1 = require("@opentelemetry/semantic-conventions");
-// Type-safe Resource constructor
-const createResource = (attributes) => {
-    return new resources_1.Resource(attributes);
-};
+// Resource constructor for OpenTelemetry
+function createResource(attributes) {
+    return { attributes };
+}
 class TelemetryManager {
     tracer;
     meter;

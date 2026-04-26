@@ -242,12 +242,12 @@ export class CRDTStateStore {
     events: StateEvent[];
     docState: Uint8Array;
   } {
-    const update = Y.encodeStateAsUpdate(this.doc);
+    const docState = Y.encodeStateAsUpdate(this.doc);
     
     return {
       state: this.getState(),
       events: [...this.events],
-      docState: update
+      docState
     };
   }
 

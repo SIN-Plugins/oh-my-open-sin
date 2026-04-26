@@ -48,9 +48,10 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                 agentId: context.sessionId,
                 action: 'swarm.create',
                 resource: `swarm:${swarmRequest.name || context.taskId}`,
-                capabilities: [],
+                capabilities: ['swarm', 'orchestrate'],
                 timestamp: Date.now(),
-                metadata: {
+                subject: context.sessionId,
+                context: {
                     agentCount: swarmRequest.agents?.length || 0,
                     orchestration: swarmRequest.orchestration,
                     workspace: context.workspace
@@ -132,24 +133,22 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
     async createDagSwarm(context, agents, dependencies) {
         const startTime = Date.now();
         try {
-            // Add tasks to scheduler - create task IDs first
-            const taskIds = [];
-            for (let idx = 0; idx < agents.length; idx++) {
-                const agent = agents[idx];
+            // Add tasks to scheduler first
+            for (const [idx, agent] of agents.entries()) {
                 const taskId = `task-${agent}-${idx}`;
-                taskIds.push(taskId);
+                const deps = dependencies
+                    .filter(d => d.to === agent)
+                    .map(d => `task-${d.from}-${agents.indexOf(d.from)}`);
                 this.scheduler.addTask({
                     id: taskId,
                     name: agent,
-                    action: 'execute_agent',
-                    payload: { agent, context },
-                    dependencies: dependencies
-                        .filter(d => d.to === agent)
-                        .map(d => `task-${d.from}-${agents.indexOf(d.from)}`),
-                    priority: 0
+                    action: 'execute_agent_task',
+                    dependencies: deps,
+                    priority: 5,
+                    payload: { agent, context }
                 });
             }
-            // Schedule and execute - schedule() takes no arguments
+            // Now schedule all tasks
             const scheduleResult = await this.scheduler.schedule();
             const duration = Date.now() - startTime;
             this.telemetry.recordEvent('swarm_dag_scheduled', {
@@ -161,10 +160,10 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
             });
             return this.success({
                 scheduled: true,
-                taskId: context.taskId,
+                taskId: scheduleResult.executionId,
                 taskCount: agents.length,
-                parallelGroups: scheduleResult.executionOrder.length,
-                estimatedDuration: duration
+                parallelGroups: scheduleResult.parallelGroups?.length || 0,
+                estimatedDuration: scheduleResult.estimatedDuration
             });
         }
         catch (error) {

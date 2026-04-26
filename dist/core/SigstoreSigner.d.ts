@@ -23,7 +23,6 @@ export interface SignatureResult {
     signature: string;
     certificate?: string;
     rekorEntryId?: string;
-    transparencyLogId?: string;
     timestamp: number;
     verified: boolean;
 }

@@ -61,12 +61,13 @@ class GitOrchestrator {
         const startTime = Date.now();
         // Policy check for worktree creation
         const policyCheck = await this.policyEngine.evaluate({
-            agentId: 'orchestrator',
+            agentId: 'git-orchestrator',
             action: 'git.worktree.create',
             resource: `branch:${config.branch}`,
-            capabilities: [],
+            capabilities: ['git', 'worktree'],
             timestamp: Date.now(),
-            metadata: {
+            subject: 'orchestrator',
+            context: {
                 workspace: this.workspace,
                 detached: config.detached,
                 path: config.path
@@ -153,12 +154,13 @@ class GitOrchestrator {
         const startTime = Date.now();
         // Policy check for branch creation
         const policyCheck = await this.policyEngine.evaluate({
-            agentId: 'orchestrator',
+            agentId: 'git-orchestrator',
             action: 'git.branch.create',
             resource: `feature:${featureName}`,
-            capabilities: [],
+            capabilities: ['git', 'branch'],
             timestamp: Date.now(),
-            metadata: { workspace: this.workspace }
+            subject: 'orchestrator',
+            context: { workspace: this.workspace }
         });
         if (!policyCheck.allowed) {
             this.telemetry.recordEvent('git_policy_violation', {
@@ -219,7 +221,7 @@ class GitOrchestrator {
                 this.telemetry.recordEvent('git_commit_signed', {
                     workspace: this.workspace,
                     commitHash,
-                    transparencyLogId: signature.transparencyLogId || signature.rekorEntryId
+                    transparencyLogId: signature.transparencyLogId || 'pending'
                 });
             }
             const duration = Date.now() - startTime;
@@ -258,12 +260,13 @@ class GitOrchestrator {
         const currentBranch = branch || await this.getCurrentBranch();
         // Policy check for push (main branch protection)
         const policyCheck = await this.policyEngine.evaluate({
-            agentId: 'orchestrator',
+            agentId: 'git-orchestrator',
             action: 'git.push',
             resource: `branch:${currentBranch}`,
-            capabilities: [],
+            capabilities: ['git', 'push'],
             timestamp: Date.now(),
-            metadata: { workspace: this.workspace, setUpstream }
+            subject: 'orchestrator',
+            context: { workspace: this.workspace, setUpstream }
         });
         if (!policyCheck.allowed) {
             this.telemetry.recordEvent('git_policy_violation', {

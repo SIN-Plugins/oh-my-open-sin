@@ -27,7 +27,6 @@ export interface SignatureResult {
   signature: string;
   certificate?: string;
   rekorEntryId?: string;
-  transparencyLogId?: string;
   timestamp: number;
   verified: boolean;
 }
@@ -82,8 +81,7 @@ export class SigstoreSigner extends EventEmitter {
       signature,
       timestamp: Date.now(),
       verified: true,
-      rekorEntryId: `rekor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      transparencyLogId: `tlog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      rekorEntryId: `rekor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     };
 
     // Store signed artifact

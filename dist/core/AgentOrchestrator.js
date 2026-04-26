@@ -75,9 +75,10 @@ class AgentOrchestrator {
             agentId: context.sessionId,
             action: 'agent.execute',
             resource: `agent:${agentName}`,
-            capabilities: [],
+            capabilities: ['execute'],
             timestamp: Date.now(),
-            metadata: { taskId: context.taskId, workspace: context.workspace }
+            subject: context.sessionId,
+            context: { taskId: context.taskId, workspace: context.workspace }
         });
         if (!policyCheck.allowed) {
             this.telemetry.recordEvent('policy_violation', {
@@ -103,8 +104,8 @@ class AgentOrchestrator {
             this.sendMessage({
                 from: 'orchestrator',
                 to: agentName,
-                type: 'task_queued',
-                payload: { context, input },
+                type: 'progress',
+                payload: { context, input, status: 'queued' },
                 timestamp: Date.now()
             });
             return {
