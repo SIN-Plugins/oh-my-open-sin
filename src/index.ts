@@ -33,6 +33,20 @@ export { Atlas, Iris, Hades, Janus, Asclepius, ExecutionLayer } from './agents/e
 
 // Git utilities
 export { GitOrchestrator } from './git/GitOrchestrator.js';
+export { GitConflictResolver, type ConflictInfo, type ResolutionStrategy } from './git/GitConflictResolver.js';
+export { GitPolicyEnforcer, type PolicyConfig, type PolicyViolation, type PolicyResult } from './git/GitPolicyEnforcer.js';
+
+// Exec utilities
+export { 
+  execAsync, 
+  runCommand, 
+  runParallelCommands, 
+  runWithRetry, 
+  commandExists,
+  withTempFile,
+  CommandQueue,
+  type ExecResult 
+} from './utils/exec.js';
 
 // Health server
 export { HealthServer } from './health/HealthServer.js';
