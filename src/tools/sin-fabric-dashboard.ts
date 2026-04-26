@@ -230,6 +230,9 @@ async function main() {
   else await renderASCII(state, tel);
 }
 
+export function SinFabricDashboard(): void { main().catch((e) => { console.error("❌", e.message); process.exit(1); }); }
+export const sinFabricDashboard = SinFabricDashboard;
+
 main().catch((e) => {
   console.error("❌", e.message);
   process.exit(1);

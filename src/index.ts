@@ -267,6 +267,32 @@ export {
   type TempleMeta
 } from './utils/fabric-controller.js';
 
+// SIN Fabric World - CRDT Sync & Bootstrap
+export {
+  SinFabricWorldSync,
+  sinFabricWorldSync,
+  discoverFleet,
+  reconcileBlackboard,
+  aggregateAuditChains,
+  propagatePatterns,
+  broadcastToFleet
+} from './tools/sin-fabric-world-sync.js';
+
+export {
+  SinFabricWorldInit,
+  sinFabricWorldInit,
+  initDirectories,
+  initAuditChain,
+  initPatternSeed,
+  initFleetSSH,
+  initDashboardAutoStart
+} from './tools/sin-fabric-world-init.js';
+
+export {
+  SinFabricDashboard,
+  sinFabricDashboard
+} from './tools/sin-fabric-dashboard.js';
+
 // State Machine
 export {
   NativeStateMachine,
