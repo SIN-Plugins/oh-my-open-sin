@@ -77,7 +77,7 @@ Monitors system health, agent status, and performance metrics.
 The `GitOrchestrator` provides safe Git operations with worktree isolation:
 
 ```typescript
-import { GitOrchestrator } from 'oh-my-open-sin';
+import { GitOrchestrator, GitConflictResolver, GitPolicyEnforcer } from 'oh-my-open-sin';
 
 const git = new GitOrchestrator('/path/to/repo');
 
@@ -93,6 +93,24 @@ const branch = await git.createFeatureBranch('new-feature');
 // Commit and push
 await git.commitChanges('feat: add new feature');
 await git.pushBranch();
+
+// Resolve conflicts intelligently
+const resolver = new GitConflictResolver(worktreePath);
+const conflicts = await resolver.analyzeConflicts();
+for (const conflict of conflicts) {
+  const strategy = await resolver.recommendStrategy(conflict);
+  await resolver.applyResolution(conflict, strategy);
+}
+
+// Enforce policies
+const enforcer = new GitPolicyEnforcer(worktreePath, {
+  requireTests: true,
+  protectedBranches: ['main', 'develop']
+});
+const result = await enforcer.validateAll();
+if (!result.passed) {
+  console.error('Policy violations:', result.violations);
+}
 ```
 
 ## Health Server
@@ -143,14 +161,43 @@ export class MyCustomAgent extends SubAgent {
 }
 ```
 
-## Cognitive Assembly Line (Planned)
+## Cognitive Assembly Line (Implemented)
 
-Future releases will include pre-built swarms:
+The framework includes pre-built swarms with 18 specialized agents:
 
-- **Research Swarm**: Athena, Argus, Daedalus, Hermes
-- **Planning Swarm**: Prometheus, Metis, Themis, Apollo
-- **Validation Swarm**: Zeus, Aegis, Hephaestus, Chronos, Nemesis
-- **Execution Swarm**: Atlas, Iris, Hades, Janus, Asclepius
+- **Research Swarm**: Athena (strategy), Argus (surveillance), Daedalus (architecture), Hermes (communication)
+- **Planning Swarm**: Prometheus (forecasting), Metis (tactics), Themis (compliance), Apollo (clarity)
+- **Validation Superlayer**: Zeus (final approval), Aegis (security), Hephaestus (quality), Chronos (performance), Nemesis (adversarial)
+- **Execution Layer**: Atlas (load balancing), Iris (visual), Hades (debugging), Janus (gateway), Asclepius (healing)
+
+## Advanced Features
+
+### Exec Utilities
+
+Powerful command execution utilities:
+
+```typescript
+import { runCommand, runWithRetry, CommandQueue, runParallelCommands } from 'oh-my-open-sin';
+
+// Simple command execution
+const { stdout, stderr } = await runCommand('git status', { cwd: '/path/to/repo' });
+
+// Retry with exponential backoff
+const result = await runWithRetry('flaky-command', { 
+  retries: 3, 
+  delayMs: 1000, 
+  backoff: 2 
+});
+
+// Sequential command queue
+const queue = new CommandQueue('/path/to/repo');
+await queue.enqueue('git add .');
+await queue.enqueue('git commit -m "update"');
+
+// Parallel execution with concurrency limit
+const commands = ['task1', 'task2', 'task3', 'task4'];
+const results = await runParallelCommands(commands, { concurrency: 2 });
+```
 
 ## Roadmap
 
@@ -159,9 +206,17 @@ Future releases will include pre-built swarms:
 - [x] Built-in agents (delegate, swarm, monitor)
 - [x] Git Orchestrator with worktree support
 - [x] Health Server
-- [ ] Dynamic Skill Injection
-- [ ] Context-Aware Routing
-- [ ] Self-Healing Execution Loops
+- [x] Cognitive Assembly Line (18 agents across 4 swarms)
+- [x] Git Conflict Resolver with intelligent strategies
+- [x] Git Policy Enforcer with automated validation
+- [x] Exec Utilities (CommandQueue, retry logic, parallel execution)
+- [x] Dynamic Skill Injection
+- [x] Context-Aware Routing
+- [x] Self-Healing Execution Loops
+- [x] Multi-Modal Verification
+- [x] State Checkpointing
+- [x] Telemetry & Monitoring (Prometheus, Grafana, FleetSync)
+- [x] Native State Machine
 - [ ] LSP Integration (sin_lsp)
 - [ ] Hash-based Editing (sin_hash_edit)
 - [ ] ULW Integration (sin_ulw)
