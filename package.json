@@ -1,0 +1,29 @@
+{
+  "name": "oh-my-open-sin",
+  "version": "1.0.0",
+  "description": "Native OpenCode SubAgent Framework - Replacing broken plugins with session-aware, non-blocking subagents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "keywords": [
+    "opencode",
+    "subagent",
+    "typescript",
+    "automation",
+    "git-orchestration"
+  ],
+  "author": "SIN-Plugins",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
