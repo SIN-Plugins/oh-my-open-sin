@@ -293,6 +293,16 @@ export {
   sinFabricDashboard
 } from './tools/sin-fabric-dashboard.js';
 
+// Planet Router - Cross-Planet Dispatch
+export {
+  analyzeDomain,
+  evaluateConstraints,
+  enforceGravityPolicy,
+  dispatchCrossPlanet,
+  type RouteDecision,
+  type GravityPolicy
+} from './bin/sin-planet-router.js';
+
 // State Machine
 export {
   NativeStateMachine,
