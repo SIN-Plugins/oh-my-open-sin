@@ -1,0 +1,12 @@
+{
+  "id": "git-master",
+  "name": "Git Orchestration & Atomic Commits",
+  "version": "1.0.0",
+  "description": "Conventional commits, worktree isolation, dry-run merge, PR automation",
+  "triggers": ["git", "commit", "branch", "merge", "pr", "worktree", "version control"],
+  "agents": ["atlas", "hephaestus", "hermes", "zeus"],
+  "mcp_servers": {},
+  "system_prompt_injection": "🌿 GIT-MASTER ACTIVE: Use atomic commits. Follow conventional commit format strictly. Never push directly to main. Use worktrees for parallel tasks. Validate merges with dry-run before PR. If conflicts arise, request semantic resolution.",
+  "permissions": { "fs": "write", "network": "deny", "exec": "sandbox" },
+  "telemetry": true
+}

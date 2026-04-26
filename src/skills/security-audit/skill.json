@@ -1,0 +1,12 @@
+{
+  "id": "security-audit",
+  "name": "Secret Scanning & Policy Enforcement",
+  "version": "1.0.0",
+  "description": "Pre-commit secret detection, SAST basics, dependency policy check",
+  "triggers": ["security", "secret", "audit", "sast", "vulnerability", "policy", "compliance"],
+  "agents": ["aegis", "zeus", "themis", "nemesis"],
+  "mcp_servers": {},
+  "system_prompt_injection": "🛡️ SECURITY-AUDIT ACTIVE: Scan all staged files for secrets before commit. Reject hardcoded keys, tokens, passwords. Enforce least-privilege fs/network/exec. Log all policy violations. Never bypass validation.",
+  "permissions": { "fs": "read", "network": "deny", "exec": "none" },
+  "telemetry": true
+}

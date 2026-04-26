@@ -48,6 +48,23 @@ export {
   type ExecResult 
 } from './utils/exec.js';
 
+// Skill system
+export {
+  discoverSkills,
+  matchSkills,
+  resolveDependencies,
+  startSkillMCPs,
+  stopSkillMCPs,
+  getSkillPromptInjection,
+  getSkillPermissions,
+  getSkillHealth
+} from './utils/skill-loader.js';
+
+export {
+  validateSkillManifest,
+  type SkillManifest
+} from './utils/skill-schema.js';
+
 // Health server
 export { HealthServer } from './health/HealthServer.js';
 

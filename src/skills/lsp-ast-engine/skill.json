@@ -1,0 +1,18 @@
+{
+  "id": "lsp-ast-engine",
+  "name": "LSP + AST Code Intelligence",
+  "version": "1.0.0",
+  "description": "Workspace rename, diagnostics, AST-grep, pattern-aware refactoring",
+  "triggers": ["refactor", "rename", "diagnostics", "ast", "lsp", "code search", "pattern"],
+  "agents": ["atlas", "iris", "hephaestus", "daedalus"],
+  "mcp_servers": {
+    "ast-grep": {
+      "command": "npx",
+      "args": ["-y", "@ast-grep/cli", "server"],
+      "env": { "AST_GREP_TIMEOUT": "10000" }
+    }
+  },
+  "system_prompt_injection": "🔍 LSP-AST ACTIVE: Use AST-aware search for refactoring. Prefer lsp_rename over manual find/replace. Run diagnostics before committing. Pattern rewrites must preserve semantics. Zero stale-line edits.",
+  "permissions": { "fs": "read", "network": "deny", "exec": "sandbox" },
+  "telemetry": true
+}
