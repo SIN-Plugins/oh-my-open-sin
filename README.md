@@ -1,1 +1,1 @@
-# oh-my-opensin
+# oh-my-open-sin
