@@ -356,6 +356,39 @@ export {
   type ScheduleResult
 } from './core/DAGTaskScheduler.js';
 
+// CRDT State Store - Issue #13
+export {
+  CRDTStateStore,
+  CRDTStoreFactory,
+  getCRDTFactory,
+  getSessionStore,
+  type StateEvent,
+  type CRDTStateOptions
+} from './core/CRDTStateStore.js';
+
+// Telemetry Manager - Issue #13
+export {
+  TelemetryManager,
+  getTelemetryManager,
+  traced,
+  type SLOConfig,
+  type TelemetryConfig,
+  type SLABreach
+} from './core/TelemetryManager.js';
+
+// Chaos Engine - Issue #13
+export {
+  ChaosEngine,
+  getChaosEngine,
+  runChaosCLI,
+  ChaosScenarios,
+  type FaultType,
+  type ChaosFault,
+  type RecoveryCheck,
+  type ChaosResult,
+  type ChaosManifest
+} from './core/ChaosEngine.js';
+
 // State Machine
 export {
   NativeStateMachine,
