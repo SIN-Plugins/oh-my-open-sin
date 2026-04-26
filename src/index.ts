@@ -303,6 +303,25 @@ export {
   type GravityPolicy
 } from './bin/sin-planet-router.js';
 
+// Galaxy Core - Event Horizon Engine
+export {
+  aggregateTelemetry,
+  macroConsensus,
+  gravitationalRoute,
+  supernovaFallback,
+  type ClusterHealth,
+  type ConsensusVote,
+  type TelemetryAggregate,
+  type RoutingDecision,
+  type FallbackPlan
+} from './bin/sin-galaxy-core.js';
+
+// Galaxy Manifest Generator
+export {
+  loadJSON as loadGalaxyManifest,
+  SinGalaxyManifestGen
+} from './bin/sin-galaxy-manifest-gen.js';
+
 // State Machine
 export {
   NativeStateMachine,

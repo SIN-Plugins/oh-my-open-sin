@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "galaxy_id": "sin-galaxy-primary",
+  "version": "1.0.0",
+  "generated_at": "2024-05-22T12:00:00.000Z",
+  "provider_constraint": "openai-only",
+  "allowed_models": ["gpt-5.4", "gpt-5.4-fast", "gpt-5.4-mini", "gpt-5.4-mini-fast"],
+  
+  "cluster_topology": {
+    "domains": {
+      "research": { "max_concurrency": 6, "routing_strategy": "parallel_fanout", "fallback_cluster": "quick_scouts" },
+      "backend": { "max_concurrency": 4, "routing_strategy": "dependency_aware", "fallback_cluster": "atlas_pool" },
+      "frontend": { "max_concurrency": 4, "routing_strategy": "dependency_aware", "fallback_cluster": "iris_pool" },
+      "infra": { "max_concurrency": 3, "routing_strategy": "sequential_safe", "fallback_cluster": "hermes_ops" },
+      "security": { "max_concurrency": 2, "routing_strategy": "strict_quorum", "fallback_cluster": "aegis_review" },
+      "data": { "max_concurrency": 3, "routing_strategy": "parallel_fanout", "fallback_cluster": "hades_pool" },
+      "qa": { "max_concurrency": 5, "routing_strategy": "parallel_fanout", "fallback_cluster": "asclepius_pool" }
+    },
+    "temple_flow": ["plan", "execution", "test_debug"],
+    "cross_cluster_routing": "wormhole_hmac",
+    "dependency_graph": {
+      "plan": ["execution"],
+      "execution": ["test_debug"],
+      "test_debug": ["plan"]
+    }
+  },
+
+  "policy_matrix": {
+    "zero_trust_enforcement": true,
+    "hmac_algorithm": "sha256",
+    "require_signature_on_handoff": true,
+    "domain_scopes": {
+      "research": { "fs": "read", "network": "allow", "exec": "none", "max_budget_pct": 15 },
+      "backend": { "fs": "write", "network": "deny", "exec": "sandbox", "max_budget_pct": 25 },
+      "frontend": { "fs": "write", "network": "allow", "exec": "none", "max_budget_pct": 20 },
+      "infra": { "fs": "write", "network": "allow", "exec": "sandbox", "max_budget_pct": 15 },
+      "security": { "fs": "read", "network": "deny", "exec": "none", "max_budget_pct": 10 },
+      "data": { "fs": "write", "network": "deny", "exec": "sandbox", "max_budget_pct": 10 },
+      "qa": { "fs": "read", "network": "deny", "exec": "sandbox", "max_budget_pct": 5 }
+    },
+    "risk_thresholds": {
+      "allow": { "max_risk_score": 0.5, "min_health": 0.7 },
+      "throttle": { "max_risk_score": 0.7, "min_health": 0.4 },
+      "block": { "max_risk_score": 1.0, "min_health": 0.0 }
+    }
+  },
+
+  "consensus_engine": {
+    "quorum_threshold_pct": 60,
+    "min_confidence_score": 0.75,
+    "weighting_strategy": "confidence_x_health_x_history",
+    "adversarial_critique_agents": ["zeus", "nemesis"],
+    "max_debate_rounds": 3,
+    "tiebreaker_agent": "hermes",
+    "voting_timeout_sec": 120,
+    "fallback_on_deadlock": "emergency_consensus"
+  },
+
+  "supernova_triggers": {
+    "budget_exhaustion_pct": 85,
+    "cluster_health_collapse": 0.35,
+    "latency_cascade_ms": 900,
+    "error_rate_spike": 0.4,
+    "stale_session_timeout_sec": 300,
+    "actions": {
+      "budget_exhaustion_pct": "model_downgrade",
+      "cluster_health_collapse": "emergency_consensus",
+      "latency_cascade_ms": "sub_galaxy_spawn",
+      "error_rate_spike": "circuit_open_per_chain",
+      "stale_session_timeout_sec": "reap_and_retry"
+    },
+    "graceful_degradation": {
+      "reduce_concurrency_factor": 0.6,
+      "switch_to_fast_models": true,
+      "scope_reduction_enabled": true,
+      "preserve_audit_chain": true
+    }
+  },
+
+  "audit_schema": {
+    "chain_type": "append_only_merkle",
+    "hash_algorithm": "sha256",
+    "signature_algorithm": "hmac-sha256",
+    "genesis_block": { "id": "genesis", "parent_hash": "0", "payload_hash": "0", "merkle_hash": "0", "signature": "init", "ts": 0 },
+    "entry_structure": ["id", "parent_hash", "payload_hash", "merkle_hash", "signature", "ts", "phase", "agent", "temple_id", "node_id", "verification_score"],
+    "tamper_evidence": "parent_hash_mismatch_or_signature_fail",
+    "retention_days": 90,
+    "board_report_mapping": {
+      "executive_summary": ["chain_valid", "broken_links", "signature_failures", "append_violations"],
+      "cost_efficiency": ["total_tokens", "total_cost_usd", "verification_gates", "healing_attempts"],
+      "security_governance": ["zero_trust_handoffs", "append_only_enforced", "tamper_evident", "graceful_degradation"]
+    }
+  },
+
+  "telemetry_evolution": {
+    "ema_alpha": 0.2,
+    "dynamic_threshold_adjustment": true,
+    "pattern_inheritance_file": "temple-patterns.json",
+    "auto_rewire_dag_on_consistent_fail": true,
+    "cache_ttl_sec": 900,
+    "self_optimization_loop": true
+  },
+
+  "fleet_sync": {
+    "crdt_strategy": "lww_register",
+    "conflict_resolution": "highest_ts_then_lexicographic_node",
+    "sync_interval_sec": 300,
+    "auth_exclusion": true,
+    "node_health_check": true,
+    "global_manifest_aggregation": true
+  }
+}
