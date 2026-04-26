@@ -32,10 +32,18 @@ async function getTelemetryMetrics() {
 }
 
 async function evolveManifest() {
-  const base = await loadJSON(MANIFEST_PATH, {});
+  let base: any = await loadJSON(MANIFEST_PATH, {});
   const tel = await getTelemetryMetrics();
   const state = await loadJSON(FABRIC_STATE, { global_budget_usd: 50, budget_consumed_usd: 0 });
-  const patterns = await loadJSON(PATTERNS_FILE, {});
+  const patterns: any = await loadJSON(PATTERNS_FILE, {});
+
+  // Ensure base structure exists
+  if (!base.supernova_triggers) base.supernova_triggers = { budget_exhaustion_pct: 85, error_rate_spike: 0.4 };
+  if (!base.consensus_engine) base.consensus_engine = { min_confidence_score: 0.75 };
+  if (!base.cluster_topology) base.cluster_topology = { domains: { backend: { max_concurrency: 4 }, frontend: { max_concurrency: 4 } } };
+  if (!base.audit_schema) base.audit_schema = { board_report_mapping: { cost_efficiency: { healing_attempts: 0 } } };
+  if (!base.version) base.version = "1.0.0";
+  if (!base.generated_at) base.generated_at = new Date().toISOString();
 
   // Dynamic threshold adjustment based on telemetry
   const budgetPct = state.global_budget_usd > 0 ? (state.budget_consumed_usd / state.global_budget_usd) * 100 : 0;
@@ -57,7 +65,7 @@ async function evolveManifest() {
   }
 
   base.generated_at = new Date().toISOString();
-  base.version = "1.0." + (parseInt(base.version?.split(".")[2] || "0") + 1);
+  base.version = "1.0." + (parseInt(base.version.split(".")[2] || "0") + 1);
   
   await fs.writeFile(MANIFEST_PATH, JSON.stringify(base, null, 2));
   console.log(`✅ Galaxy manifest evolved to v${base.version} (budget:${budgetPct.toFixed(1)}% err:${(tel.error_rate*100).toFixed(1)}% lat:${Math.round(tel.avg_latency)}ms)`);
@@ -68,7 +76,7 @@ async function main() {
   if (cmd === "evolve") {
     await evolveManifest();
   } else if (cmd === "validate") {
-    const m = await loadJSON(MANIFEST_PATH, {});
+    const m: any = await loadJSON(MANIFEST_PATH, {});
     const required = ["cluster_topology","policy_matrix","consensus_engine","supernova_triggers","audit_schema","telemetry_evolution","fleet_sync"];
     const missing = required.filter(k => !m[k]);
     if (missing.length > 0) { console.log(`❌ Missing sections: ${missing.join(", ")}`); process.exit(1); }

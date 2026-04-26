@@ -242,13 +242,12 @@ export class CRDTStateStore {
     events: StateEvent[];
     docState: Uint8Array;
   } {
-    const encoder = new Y.Encoder();
-    Y.encodeStateAsUpdate(this.doc, encoder);
+    const update = Y.encodeStateAsUpdate(this.doc);
     
     return {
       state: this.getState(),
       events: [...this.events],
-      docState: encoder.toUint8Array()
+      docState: update
     };
   }
 
@@ -261,8 +260,7 @@ export class CRDTStateStore {
     docState?: Uint8Array;
   }): void {
     if (snapshot.docState) {
-      const decoder = new Y.Decoder(snapshot.docState);
-      Y.applyUpdate(this.doc, decoder.toUint8Array());
+      Y.applyUpdate(this.doc, snapshot.docState);
       this.state = this.doc.getMap('state');
     }
 
@@ -346,13 +344,12 @@ export class CRDTStateStore {
     docSize: number;
     pendingTransactions: number;
   } {
-    const encoder = new Y.Encoder();
-    Y.encodeStateAsUpdate(this.doc, encoder);
+    const update = Y.encodeStateAsUpdate(this.doc);
     
     return {
       eventCount: this.events.length,
       stateKeys: Array.from(this.state.keys()).length,
-      docSize: encoder.toUint8Array().length,
+      docSize: update.length,
       pendingTransactions: this.pendingTransactions.length
     };
   }

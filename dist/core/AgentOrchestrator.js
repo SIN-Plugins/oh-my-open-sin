@@ -72,10 +72,12 @@ class AgentOrchestrator {
         const spanId = crypto.randomUUID();
         // Policy check before execution
         const policyCheck = await this.policyEngine.evaluate({
+            agentId: context.sessionId,
             action: 'agent.execute',
             resource: `agent:${agentName}`,
-            subject: context.sessionId,
-            context: { taskId: context.taskId, workspace: context.workspace }
+            capabilities: [],
+            timestamp: Date.now(),
+            metadata: { taskId: context.taskId, workspace: context.workspace }
         });
         if (!policyCheck.allowed) {
             this.telemetry.recordEvent('policy_violation', {

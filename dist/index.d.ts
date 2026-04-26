@@ -30,7 +30,7 @@ export { SinRouteDebug, sinRouteDebug } from './tools/sin-route-debug.js';
 export { HealthServer } from './health/HealthServer.js';
 export { DynamicSkillInjector, skillInjector, ContextAwareRouter, contextRouter, SelfHealingExecutor, selfHealingExecutorInstance as selfHealingExecutor, MultiModalVerifier, StateCheckpointManager, AdvancedFeatures } from './advanced/features.js';
 export { SinHashEdit, sinHashEdit, type HashEdit, type HashEditResult, type FileSection, CLI_HELP as HASH_EDIT_CLI_HELP } from './tools/sin_hash_edit.js';
-export { TelemetryManager, PrometheusExporter, GrafanaDashboardGenerator, FleetSync, TelemetryModule, type TelemetryEvent, type AgentMetrics, type FleetNode } from './advanced/telemetry.js';
+export { PrometheusExporter, GrafanaDashboardGenerator, FleetSync, TelemetryModule, type TelemetryEvent, type AgentMetrics, type FleetNode } from './advanced/telemetry.js';
 export { createCheckpoint, restoreCheckpoint, rollbackPartial, cleanupCheckpoints, type CheckpointMeta } from './utils/checkpoint-manager-v2.js';
 export { classifyFailureV2, type FailureType, type RootCause, type FailureAnalysis } from './utils/failure-classifier-v2.js';
 export { STRATEGY_MAP, runLspAutoFix, runDepReinstall, runTestDebugRerun, runScopeSplit, type StrategyResult } from './utils/healing-strategies.js';

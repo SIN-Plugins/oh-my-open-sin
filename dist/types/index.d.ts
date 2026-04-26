@@ -22,9 +22,13 @@ export interface TaskContext {
     branch?: string;
     parentTaskId?: string;
     metadata?: Record<string, unknown>;
+    task?: {
+        id: string;
+        description?: string;
+    };
 }
 export interface AgentMessage {
-    type: 'request' | 'response' | 'error' | 'progress';
+    type: 'request' | 'response' | 'error' | 'progress' | 'task_queued';
     from: string;
     to: string;
     payload: unknown;

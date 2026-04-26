@@ -25,14 +25,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/exporter-prometheus": "^0.215.0",
-    "@opentelemetry/instrumentation-http": "^0.215.0",
-    "@opentelemetry/resources": "^2.7.0",
-    "@opentelemetry/sdk-node": "^0.215.0",
-    "@opentelemetry/semantic-conventions": "^1.40.0",
-    "yjs": "^13.6.30"
   }
 }

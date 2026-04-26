@@ -37,10 +37,12 @@ class SinDelegate extends SubAgent_js_1.SubAgent {
             const task = input;
             // Policy check for delegation
             const policyCheck = await this.policyEngine.evaluate({
+                agentId: context.sessionId,
                 action: 'delegate.route',
                 resource: `task:${context.taskId}`,
-                subject: context.sessionId,
-                context: { taskType: task.type, workspace: context.workspace }
+                capabilities: [],
+                timestamp: Date.now(),
+                metadata: { taskType: task.type, workspace: context.workspace }
             });
             if (!policyCheck.allowed) {
                 this.telemetry.recordEvent('delegate_policy_violation', {

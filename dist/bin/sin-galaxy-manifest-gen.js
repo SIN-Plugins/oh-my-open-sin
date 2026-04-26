@@ -51,10 +51,23 @@ async function getTelemetryMetrics() {
     return { cost, tokens, error_rate: total > 0 ? errors / total : 0, avg_latency: total > 0 ? latencySum / total : 0, total };
 }
 async function evolveManifest() {
-    const base = await loadJSON(MANIFEST_PATH, {});
+    let base = await loadJSON(MANIFEST_PATH, {});
     const tel = await getTelemetryMetrics();
     const state = await loadJSON(FABRIC_STATE, { global_budget_usd: 50, budget_consumed_usd: 0 });
     const patterns = await loadJSON(PATTERNS_FILE, {});
+    // Ensure base structure exists
+    if (!base.supernova_triggers)
+        base.supernova_triggers = { budget_exhaustion_pct: 85, error_rate_spike: 0.4 };
+    if (!base.consensus_engine)
+        base.consensus_engine = { min_confidence_score: 0.75 };
+    if (!base.cluster_topology)
+        base.cluster_topology = { domains: { backend: { max_concurrency: 4 }, frontend: { max_concurrency: 4 } } };
+    if (!base.audit_schema)
+        base.audit_schema = { board_report_mapping: { cost_efficiency: { healing_attempts: 0 } } };
+    if (!base.version)
+        base.version = "1.0.0";
+    if (!base.generated_at)
+        base.generated_at = new Date().toISOString();
     // Dynamic threshold adjustment based on telemetry
     const budgetPct = state.global_budget_usd > 0 ? (state.budget_consumed_usd / state.global_budget_usd) * 100 : 0;
     if (budgetPct > 70) {
@@ -73,7 +86,7 @@ async function evolveManifest() {
         base.audit_schema.board_report_mapping.cost_efficiency.healing_attempts = patterns.verification_thresholds.min_coverage_delta || -5;
     }
     base.generated_at = new Date().toISOString();
-    base.version = "1.0." + (parseInt(base.version?.split(".")[2] || "0") + 1);
+    base.version = "1.0." + (parseInt(base.version.split(".")[2] || "0") + 1);
     await promises_1.default.writeFile(MANIFEST_PATH, JSON.stringify(base, null, 2));
     console.log(`✅ Galaxy manifest evolved to v${base.version} (budget:${budgetPct.toFixed(1)}% err:${(tel.error_rate * 100).toFixed(1)}% lat:${Math.round(tel.avg_latency)}ms)`);
 }
