@@ -236,6 +236,37 @@ export {
   sinResumeCLI
 } from './tools/sin-resume.js';
 
+// Tri-Temple Audit & Fabric Controller
+export {
+  verifyChain,
+  verifyHMAC,
+  computeHash,
+  loadChain,
+  generateBoardReport,
+  formatBoardReport,
+  runAuditVerify,
+  watchAuditChain,
+  appendAuditEntry,
+  getTelemetryMetrics,
+  parseArgs,
+  type AuditEntry,
+  type ChainReport,
+  type BoardReport
+} from './utils/audit-verify.js';
+
+export {
+  loadFabricState,
+  saveFabricState,
+  safeRun,
+  BudgetAllocator,
+  RiskController,
+  PortfolioScheduler,
+  CrossTempleRouter,
+  runFabricController,
+  type FabricState,
+  type TempleMeta
+} from './utils/fabric-controller.js';
+
 // State Machine
 export {
   NativeStateMachine,
