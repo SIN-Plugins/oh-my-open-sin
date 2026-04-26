@@ -140,6 +140,50 @@ export {
   type FleetNode
 } from './advanced/telemetry.js';
 
+// Self-Healing v2
+export {
+  createCheckpoint,
+  restoreCheckpoint,
+  rollbackPartial,
+  cleanupCheckpoints,
+  type CheckpointMeta
+} from './utils/checkpoint-manager-v2.js';
+
+export {
+  classifyFailureV2,
+  type FailureType,
+  type RootCause,
+  type FailureAnalysis
+} from './utils/failure-classifier-v2.js';
+
+export {
+  STRATEGY_MAP,
+  runLspAutoFix,
+  runDepReinstall,
+  runTestDebugRerun,
+  runScopeSplit,
+  type StrategyResult
+} from './utils/healing-strategies.js';
+
+export {
+  loadMatrix,
+  updateMatrix,
+  recommendStrategy,
+  type MatrixEntry
+} from './utils/healing-learner.js';
+
+export {
+  initHealingLoopV2,
+  executeHealingStepV2,
+  calculateDynamicBudget,
+  type HealingContextV2
+} from './utils/healing-loop-v2.js';
+
+export {
+  SinHealingDebugV2,
+  sinHealingDebugV2
+} from './tools/sin-healing-debug-v2.js';
+
 // State Machine
 export {
   NativeStateMachine,
