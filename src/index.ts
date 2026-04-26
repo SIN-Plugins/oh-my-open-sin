@@ -212,6 +212,30 @@ export {
   sinVerifyDebug
 } from './tools/sin-verify-debug.js';
 
+// Deterministic Checkpointing v2
+export {
+  serializeState,
+  deserializeState,
+  type CheckpointState
+} from './utils/checkpoint-state.js';
+
+export {
+  saveCheckpoint,
+  loadCheckpoint,
+  listCheckpoints,
+  cleanupStaleCheckpoints
+} from './utils/checkpoint-storage.js';
+
+export {
+  prepareResume,
+  type ResumePayload
+} from './utils/checkpoint-resume.js';
+
+export {
+  SinResumeCLI,
+  sinResumeCLI
+} from './tools/sin-resume.js';
+
 // State Machine
 export {
   NativeStateMachine,
