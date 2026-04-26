@@ -420,6 +420,20 @@ export class TelemetryManager {
       tracingEnabled: this.config.enableTracing
     };
   }
+  /**
+   * Record an event for logging and auditing
+   */
+  recordEvent(eventType: string, data: Record<string, any>): void {
+    console.log(`[Telemetry:Event] ${eventType}:`, JSON.stringify(data));
+  }
+
+  /**
+   * Check if telemetry is enabled
+   */
+  isEnabled(): boolean {
+    return this.config.enableMetrics || this.config.enableTracing;
+  }
+
 }
 
 // Singleton instance
