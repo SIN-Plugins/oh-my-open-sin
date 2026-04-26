@@ -53,12 +53,22 @@ class DAGTaskScheduler extends events_1.EventEmitter {
         this.emit('task:added', fullTask);
         return taskId;
     }
-    async schedule() {
+    async schedule(tasks) {
+        const executionId = `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        // If tasks are provided, add them to the scheduler
+        if (tasks && tasks.length > 0) {
+            for (const task of tasks) {
+                this.addTask(task);
+            }
+        }
         const result = {
             scheduledTasks: [],
             blockedTasks: [],
             circularDependencies: [],
-            executionOrder: []
+            executionOrder: [],
+            parallelGroups: [],
+            estimatedDuration: 0,
+            executionId
         };
         // Check for circular dependencies
         const cycles = this.detectCycles();
@@ -70,6 +80,12 @@ class DAGTaskScheduler extends events_1.EventEmitter {
         // Topological sort with parallel grouping
         const executionOrder = this.topologicalSortParallel();
         result.executionOrder = executionOrder;
+        result.parallelGroups = executionOrder;
+        // Estimate duration based on task count and concurrency
+        const totalTasks = this.tasks.size;
+        const avgTaskDuration = 50; // ms
+        const estimatedGroups = executionOrder.length;
+        result.estimatedDuration = estimatedGroups * avgTaskDuration;
         // Schedule tasks
         for (const group of executionOrder) {
             result.scheduledTasks.push(...group);

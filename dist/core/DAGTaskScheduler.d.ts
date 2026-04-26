@@ -38,6 +38,9 @@ export interface ScheduleResult {
     blockedTasks: string[];
     circularDependencies: string[];
     executionOrder: string[][];
+    parallelGroups: string[][];
+    estimatedDuration: number;
+    executionId: string;
 }
 export declare class DAGTaskScheduler extends EventEmitter {
     private tasks;
@@ -53,7 +56,14 @@ export declare class DAGTaskScheduler extends EventEmitter {
         name: string;
         action: string;
     }): string;
-    schedule(): Promise<ScheduleResult>;
+    schedule(tasks?: Array<{
+        id: string;
+        name: string;
+        action: string;
+        payload?: any;
+        dependencies?: string[];
+        priority?: number;
+    }>): Promise<ScheduleResult>;
     executeTask(taskId: string): Promise<any>;
     executeSpeculative(taskName: string, strategies: Array<{
         action: string;

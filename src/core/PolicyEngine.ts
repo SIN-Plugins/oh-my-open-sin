@@ -19,7 +19,12 @@ export interface PolicyContext {
   session?: string;
   timestamp: number;
   metadata?: Record<string, any>;
-  subject?: string; // Added for cross-module compatibility
+  subject?: string;
+  taskType?: string;
+  workspace?: string;
+  taskId?: string;
+  sessionId?: string;
+  agent_type?: string;
 }
 
 export interface PolicyDecision {
@@ -27,6 +32,7 @@ export interface PolicyDecision {
   reason?: string;
   obligations?: string[];
   advice?: string[];
+  violations?: Array<{ message: string; ruleId: string }>;
 }
 
 export interface PolicyRule {

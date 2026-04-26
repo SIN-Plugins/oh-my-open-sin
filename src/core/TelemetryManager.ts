@@ -21,6 +21,11 @@ import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { TaskContext, SubAgentResult } from '../types/index.js';
 
+// Type-safe Resource constructor
+const createResource = (attributes: Record<string, string | number | boolean>) => {
+  return new Resource(attributes);
+};
+
 export interface SLOConfig {
   name: string;
   metric: 'latency_p99' | 'error_rate' | 'throughput' | 'availability';
@@ -75,7 +80,7 @@ export class TelemetryManager {
       alertWebhook: config.alertWebhook || ''
     };
 
-    const resource = new Resource({
+    const resource = createResource({
       [SEMRESATTRS_SERVICE_NAME]: this.config.serviceName,
       [SEMRESATTRS_SERVICE_VERSION]: this.config.serviceVersion
     });
@@ -122,7 +127,7 @@ export class TelemetryManager {
     }
 
     this.sdk = new NodeSDK({
-      resource: new Resource({
+      resource: createResource({
         [SEMRESATTRS_SERVICE_NAME]: this.config.serviceName,
         [SEMRESATTRS_SERVICE_VERSION]: this.config.serviceVersion
       }),
