@@ -356,7 +356,7 @@ async function runChaosCLI(manifestPath, options = {}) {
             console.log(`✓ Fault removed: ${fault.id}`);
         });
         engine.on('test:complete', ({ results }) => {
-            const failed = results.filter(r => !r.recovered || r.slaBreached);
+            const failed = results.filter((r) => !r.recovered || r.slaBreached);
             if (failed.length > 0) {
                 console.error(`✗ ${failed.length} tests failed or breached SLA`);
             }

@@ -2,34 +2,13 @@
 # Build artifacts
 dist/
 build/
-*.js
-*.js.map
-*.d.ts
-*.d.ts.map
-
-# Dependencies
-node_modules/
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Logs and temporary files
-*.log
-*.tmp
-
-# Editors
-.vscode/
-.idea/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+target/
 
 # Compiled files
+*.js.map
+*.d.ts.map
+*.pyc
+*.class
 *.o
 *.obj
 *.exe
@@ -38,16 +17,35 @@ __pycache__/
 *.a
 *.out
 
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.gradle/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
 # Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Testing
-.mypy_cache/
-.pytest_cache/
-
-# System
+# System files
 .DS_Store
 Thumbs.db
 ```

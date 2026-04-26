@@ -20,6 +20,7 @@ export interface ChaosFault {
     duration?: number;
     probability?: number;
     metadata?: Record<string, unknown>;
+    safeMode?: boolean;
 }
 export interface RecoveryCheck {
     name: string;

@@ -21,6 +21,7 @@ const api_1 = require("@opentelemetry/api");
 const sdk_node_1 = require("@opentelemetry/sdk-node");
 const exporter_prometheus_1 = require("@opentelemetry/exporter-prometheus");
 const instrumentation_http_1 = require("@opentelemetry/instrumentation-http");
+const resources_1 = require("@opentelemetry/resources");
 const semantic_conventions_1 = require("@opentelemetry/semantic-conventions");
 class TelemetryManager {
     tracer;
@@ -46,7 +47,7 @@ class TelemetryManager {
             sloConfigs: config.sloConfigs || [],
             alertWebhook: config.alertWebhook || ''
         };
-        const resource = new resources_1.Resource({
+        const resource = (0, resources_1.resourceFromAttributes)({
             [semantic_conventions_1.SEMRESATTRS_SERVICE_NAME]: this.config.serviceName,
             [semantic_conventions_1.SEMRESATTRS_SERVICE_VERSION]: this.config.serviceVersion
         });
@@ -83,7 +84,7 @@ class TelemetryManager {
             exporters.push(new exporter_prometheus_1.PrometheusExporter({ port: this.config.prometheusPort }));
         }
         this.sdk = new sdk_node_1.NodeSDK({
-            resource: new resources_1.Resource({
+            resource: (0, resources_1.resourceFromAttributes)({
                 [semantic_conventions_1.SEMRESATTRS_SERVICE_NAME]: this.config.serviceName,
                 [semantic_conventions_1.SEMRESATTRS_SERVICE_VERSION]: this.config.serviceVersion
             }),

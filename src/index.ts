@@ -130,7 +130,6 @@ export {
 
 // Telemetry & Monitoring
 export {
-  TelemetryManager,
   PrometheusExporter,
   GrafanaDashboardGenerator,
   FleetSync,

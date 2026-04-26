@@ -224,7 +224,7 @@ class CRDTStateStore {
      * Export state snapshot for backup
      */
     exportSnapshot() {
-        const encoder = new Y.Encoder();
+        const encoder = new Y.UpdateEncoderV1();
         Y.encodeStateAsUpdate(this.doc, encoder);
         return {
             state: this.getState(),
@@ -237,7 +237,7 @@ class CRDTStateStore {
      */
     importSnapshot(snapshot) {
         if (snapshot.docState) {
-            const decoder = new Y.Decoder(snapshot.docState);
+            const decoder = new Y.UpdateDecoderV1(snapshot.docState);
             Y.applyUpdate(this.doc, decoder.toUint8Array());
             this.state = this.doc.getMap('state');
         }
@@ -307,7 +307,7 @@ class CRDTStateStore {
      * Get statistics
      */
     getStats() {
-        const encoder = new Y.Encoder();
+        const encoder = new Y.UpdateEncoderV1();
         Y.encodeStateAsUpdate(this.doc, encoder);
         return {
             eventCount: this.events.length,
