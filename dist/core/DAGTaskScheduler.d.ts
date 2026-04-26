@@ -38,6 +38,9 @@ export interface ScheduleResult {
     blockedTasks: string[];
     circularDependencies: string[];
     executionOrder: string[][];
+    executionId?: string;
+    parallelGroups?: string[][];
+    estimatedDuration?: number;
 }
 export declare class DAGTaskScheduler extends EventEmitter {
     private tasks;

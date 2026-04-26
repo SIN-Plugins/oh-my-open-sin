@@ -22,6 +22,10 @@ export interface TaskContext {
     branch?: string;
     parentTaskId?: string;
     metadata?: Record<string, unknown>;
+    task?: {
+        id: string;
+        [key: string]: any;
+    };
 }
 export interface AgentMessage {
     type: 'request' | 'response' | 'error' | 'progress';

@@ -7,13 +7,15 @@ interface RouteDecision {
     risk_score: number;
     confidence: number;
 }
-interface GravityPolicy {
+export interface GravityPolicy {
     allowed_domains: string[];
     max_budget_pct: number;
     max_risk_score: number;
     require_hmac: boolean;
     network_scope: "allow" | "deny";
     exec_scope: "sandbox" | "none";
+}
+export interface RouteDecisionExport extends RouteDecision {
 }
 export declare function analyzeDomain(description: string, context: string): {
     domain: string;

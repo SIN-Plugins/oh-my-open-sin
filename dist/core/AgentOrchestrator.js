@@ -72,8 +72,11 @@ class AgentOrchestrator {
         const spanId = crypto.randomUUID();
         // Policy check before execution
         const policyCheck = await this.policyEngine.evaluate({
+            agentId: context.sessionId,
             action: 'agent.execute',
             resource: `agent:${agentName}`,
+            capabilities: ['execute'],
+            timestamp: Date.now(),
             subject: context.sessionId,
             context: { taskId: context.taskId, workspace: context.workspace }
         });
@@ -101,8 +104,8 @@ class AgentOrchestrator {
             this.sendMessage({
                 from: 'orchestrator',
                 to: agentName,
-                type: 'task_queued',
-                payload: { context, input },
+                type: 'progress',
+                payload: { context, input, status: 'queued' },
                 timestamp: Date.now()
             });
             return {

@@ -27,6 +27,7 @@ export interface ChaosFault {
   duration?: number; // ms, undefined = until manually stopped
   probability?: number; // 0-1, default = 1.0
   metadata?: Record<string, unknown>;
+  safeMode?: boolean; // Added for safety checks
 }
 
 export interface RecoveryCheck {
@@ -445,7 +446,7 @@ export async function runChaosCLI(manifestPath: string, options: { safeMode?: bo
     });
     
     engine.on('test:complete', ({ results }) => {
-      const failed = results.filter(r => !r.recovered || r.slaBreached);
+      const failed = results.filter((r: any) => !r.recovered || r.slaBreached);
       if (failed.length > 0) {
         console.error(`✗ ${failed.length} tests failed or breached SLA`);
       } else {

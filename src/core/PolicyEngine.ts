@@ -20,6 +20,7 @@ export interface PolicyContext {
   timestamp: number;
   metadata?: Record<string, any>;
   subject?: string; // Added for cross-module compatibility
+  context?: Record<string, any>; // Added for runtime integration
 }
 
 export interface PolicyDecision {

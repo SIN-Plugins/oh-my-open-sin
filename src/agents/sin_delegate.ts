@@ -41,8 +41,11 @@ export class SinDelegate extends SubAgent {
 
       // Policy check for delegation
       const policyCheck = await this.policyEngine.evaluate({
+        agentId: context.sessionId,
         action: 'delegate.route',
         resource: `task:${context.taskId}`,
+        capabilities: ['delegate', 'route'],
+        timestamp: Date.now(),
         subject: context.sessionId,
         context: { taskType: task.type, workspace: context.workspace }
       });

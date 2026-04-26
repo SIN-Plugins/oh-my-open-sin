@@ -55,8 +55,11 @@ export class SinSwarm extends SubAgent {
 
       // Policy check for swarm creation
       const policyCheck = await this.policyEngine.evaluate({
+        agentId: context.sessionId,
         action: 'swarm.create',
         resource: `swarm:${swarmRequest.name || context.taskId}`,
+        capabilities: ['swarm', 'orchestrate'],
+        timestamp: Date.now(),
         subject: context.sessionId,
         context: { 
           agentCount: swarmRequest.agents?.length || 0,
@@ -154,16 +157,25 @@ export class SinSwarm extends SubAgent {
     const startTime = Date.now();
     
     try {
-      // Schedule tasks with DAG
-      const scheduleResult = await this.scheduler.schedule(agents.map((agent, idx) => ({
-        id: `task-${agent}-${idx}`,
-        name: agent,
-        dependencies: dependencies
+      // Add tasks to scheduler first
+      for (const [idx, agent] of agents.entries()) {
+        const taskId = `task-${agent}-${idx}`;
+        const deps = dependencies
           .filter(d => d.to === agent)
-          .map(d => `task-${d.from}-${agents.indexOf(d.from)}`),
-        priority: 'normal',
-        payload: { agent, context }
-      })));
+          .map(d => `task-${d.from}-${agents.indexOf(d.from)}`);
+        
+        this.scheduler.addTask({
+          id: taskId,
+          name: agent,
+          action: 'execute_agent_task',
+          dependencies: deps,
+          priority: 5,
+          payload: { agent, context }
+        });
+      }
+      
+      // Now schedule all tasks
+      const scheduleResult = await this.scheduler.schedule();
 
       const duration = Date.now() - startTime;
 
@@ -179,7 +191,7 @@ export class SinSwarm extends SubAgent {
         scheduled: true,
         taskId: scheduleResult.executionId,
         taskCount: agents.length,
-        parallelGroups: scheduleResult.parallelGroups.length,
+        parallelGroups: scheduleResult.parallelGroups?.length || 0,
         estimatedDuration: scheduleResult.estimatedDuration
       });
     } catch (error) {

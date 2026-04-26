@@ -25,6 +25,7 @@ export interface TaskContext {
   branch?: string;
   parentTaskId?: string;
   metadata?: Record<string, unknown>;
+  task?: { id: string; [key: string]: any }; // Added for telemetry compatibility
 }
 
 export interface AgentMessage {

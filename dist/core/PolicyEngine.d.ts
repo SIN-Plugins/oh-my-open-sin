@@ -18,6 +18,7 @@ export interface PolicyContext {
     timestamp: number;
     metadata?: Record<string, any>;
     subject?: string;
+    context?: Record<string, any>;
 }
 export interface PolicyDecision {
     allowed: boolean;

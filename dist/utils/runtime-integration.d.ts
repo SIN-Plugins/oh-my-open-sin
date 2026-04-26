@@ -1,52 +1,23 @@
 /**
- * Runtime Integration Layer
- *
- * Verbindet alle Module im tatsächlichen Execution-Flow:
- * - Skill-Injection vor Agent-Execution
- * - Context-Aware Routing v2
- * - Self-Healing Loop bei Failures
- * - Checkpoint Auto-Save
- * - Native OpenCode Hooks
+ * Runtime Integration Layer - FIXED VERSION
  */
 import { type RoutingDecisionV2 } from './router-v2.js';
+import { type HealingContextV2 } from './healing-loop-v2.js';
+import { type CheckpointMeta } from './checkpoint-manager-v2.js';
 import { SubAgentResult } from '../types/index.js';
-export interface SessionContext {
+import { PolicyEngine } from '../core/PolicyEngine.js';
+import { TelemetryManager } from '../core/TelemetryManager.js';
+import { type SinConfig } from './config-loader.js';
+export interface RuntimeContext {
     sessionId: string;
-    workspace: string;
-    metadata: Record<string, any>;
-    activeSkills?: string[];
-    checkpointId?: string;
+    config: SinConfig;
+    policyEngine: PolicyEngine;
+    telemetryManager: TelemetryManager;
+    checkpoint?: CheckpointMeta;
+    healingCtx?: HealingContextV2;
     routingDecision?: RoutingDecisionV2;
 }
-export interface IntegratedTaskResult extends SubAgentResult {
-    checkpointId?: string;
-    routingDecision?: RoutingDecisionV2;
-    healingAttempts?: number;
-    skillContext?: string;
-}
-declare const sessionContexts: Map<string, SessionContext>;
-/**
- * Initialisiert Session-Kontext mit Skills, Routing und Checkpoint
- */
-export declare function initSessionContext(sessionId: string, workspace: string, description: string, agentType: string): Promise<SessionContext>;
-/**
- * Bereitet Task vor mit Skill-Injection, Policy-Check und Checkpoint
- */
-export declare function prepareTaskExecution(sessionId: string, description: string): Promise<{
-    preparedDescription: string;
-    context: SessionContext;
-}>;
-/**
- * Führt Task aus mit Self-Healing bei Failures
- */
-export declare function executeWithHealing(sessionId: string, agentExecuteFn: () => Promise<SubAgentResult>, maxRetries?: number): Promise<IntegratedTaskResult>;
-/**
- * Cleanup Session am Ende
- */
-export declare function cleanupSession(sessionId: string): Promise<void>;
-/**
- * Resume Session von Checkpoint nach Crash
- */
-export declare function resumeSessionFromCheckpoint(sessionId: string, workspace: string): Promise<SessionContext | null>;
-export { sessionContexts };
+export declare function initRuntimeContext(sessionId: string): Promise<RuntimeContext>;
+export declare function executeWithRuntimeIntegration(ctx: RuntimeContext, description: string, targetPaths?: string[], worktreePath?: string): Promise<SubAgentResult>;
+export declare function cleanupRuntimeContext(ctx: RuntimeContext): Promise<void>;
 //# sourceMappingURL=runtime-integration.d.ts.map

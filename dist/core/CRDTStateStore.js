@@ -224,12 +224,11 @@ class CRDTStateStore {
      * Export state snapshot for backup
      */
     exportSnapshot() {
-        const encoder = new Y.Encoder();
-        Y.encodeStateAsUpdate(this.doc, encoder);
+        const docState = Y.encodeStateAsUpdate(this.doc);
         return {
             state: this.getState(),
             events: [...this.events],
-            docState: encoder.toUint8Array()
+            docState
         };
     }
     /**
@@ -237,8 +236,7 @@ class CRDTStateStore {
      */
     importSnapshot(snapshot) {
         if (snapshot.docState) {
-            const decoder = new Y.Decoder(snapshot.docState);
-            Y.applyUpdate(this.doc, decoder.toUint8Array());
+            Y.applyUpdate(this.doc, snapshot.docState);
             this.state = this.doc.getMap('state');
         }
         if (snapshot.events) {
@@ -307,12 +305,11 @@ class CRDTStateStore {
      * Get statistics
      */
     getStats() {
-        const encoder = new Y.Encoder();
-        Y.encodeStateAsUpdate(this.doc, encoder);
+        const update = Y.encodeStateAsUpdate(this.doc);
         return {
             eventCount: this.events.length,
             stateKeys: Array.from(this.state.keys()).length,
-            docSize: encoder.toUint8Array().length,
+            docSize: update.length,
             pendingTransactions: this.pendingTransactions.length
         };
     }

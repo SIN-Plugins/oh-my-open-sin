@@ -66,8 +66,11 @@ export class GitOrchestrator {
     
     // Policy check for worktree creation
     const policyCheck = await this.policyEngine.evaluate({
+      agentId: 'git-orchestrator',
       action: 'git.worktree.create',
       resource: `branch:${config.branch}`,
+      capabilities: ['git', 'worktree'],
+      timestamp: Date.now(),
       subject: 'orchestrator',
       context: { 
         workspace: this.workspace,
@@ -168,8 +171,11 @@ export class GitOrchestrator {
     
     // Policy check for branch creation
     const policyCheck = await this.policyEngine.evaluate({
+      agentId: 'git-orchestrator',
       action: 'git.branch.create',
       resource: `feature:${featureName}`,
+      capabilities: ['git', 'branch'],
+      timestamp: Date.now(),
       subject: 'orchestrator',
       context: { workspace: this.workspace }
     });
@@ -236,12 +242,12 @@ export class GitOrchestrator {
       // Sign commit with Sigstore for provenance
       if (signWithSigstore) {
         const commitHash = await this.getLatestCommitHash();
-        const signature = await this.sigstoreSigner.signCommit(commitHash, message);
+        const signature = await this.sigstoreSigner.signCommit(commitHash, 'orchestrator', 'orchestrator@sin.local');
         
         this.telemetry.recordEvent('git_commit_signed', {
           workspace: this.workspace,
           commitHash,
-          transparencyLogId: signature.transparencyLogId
+          transparencyLogId: (signature as any).transparencyLogId || 'pending'
         });
       }
 
@@ -283,8 +289,11 @@ export class GitOrchestrator {
     
     // Policy check for push (main branch protection)
     const policyCheck = await this.policyEngine.evaluate({
+      agentId: 'git-orchestrator',
       action: 'git.push',
       resource: `branch:${currentBranch}`,
+      capabilities: ['git', 'push'],
+      timestamp: Date.now(),
       subject: 'orchestrator',
       context: { workspace: this.workspace, setUpstream }
     });
