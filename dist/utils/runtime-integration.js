@@ -115,7 +115,7 @@ async function prepareTaskExecution(sessionId, description) {
     }
     return { preparedDescription, context: ctx };
 }
-async function executeWithHealing(sessionId, agentExecuteFn, maxRetries = 3) {
+async function executeWithHealing(sessionId, agentExecuteFn, maxRetries = 3, onComplete) {
     const ctx = sessionContexts.get(sessionId);
     let lastError = null;
     let healingAttempts = 0;

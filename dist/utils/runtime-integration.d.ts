@@ -25,7 +25,7 @@ export declare function prepareTaskExecution(sessionId: string, description: str
     preparedDescription: string;
     context: SessionContext;
 }>;
-export declare function executeWithHealing(sessionId: string, agentExecuteFn: () => Promise<SubAgentResult>, maxRetries?: number): Promise<IntegratedTaskResult>;
+export declare function executeWithHealing(sessionId: string, agentExecuteFn: () => Promise<SubAgentResult>, maxRetries?: number, onComplete?: (success: boolean) => Promise<void>): Promise<IntegratedTaskResult>;
 export declare function cleanupSession(sessionId: string): Promise<void>;
 export declare function resumeSessionFromCheckpoint(sessionId: string, workspace: string): Promise<SessionContext | null>;
 export { sessionContexts };
