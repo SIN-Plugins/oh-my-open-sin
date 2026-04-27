@@ -86,4 +86,13 @@ async function main() {
   }
 }
 
+// Export for use as module
+export const SinGalaxyManifestGen = { evolveManifest, validateManifest: async () => {
+  const m = await loadJSON(MANIFEST_PATH, {}) as Record<string, unknown>;
+  const required = ["cluster_topology","policy_matrix","consensus_engine","supernova_triggers","audit_schema","telemetry_evolution","fleet_sync"];
+  const missing = required.filter(k => !(k in m));
+  if (missing.length > 0) throw new Error(`Missing sections: ${missing.join(", ")}`);
+  return true;
+}};
+
 main().catch(e => { console.error("❌", e.message); process.exit(1); });

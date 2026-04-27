@@ -30,7 +30,7 @@ export { SinRouteDebug, sinRouteDebug } from './tools/sin-route-debug.js';
 export { HealthServer } from './health/HealthServer.js';
 export { DynamicSkillInjector, skillInjector, ContextAwareRouter, contextRouter, SelfHealingExecutor, selfHealingExecutorInstance as selfHealingExecutor, MultiModalVerifier, StateCheckpointManager, AdvancedFeatures } from './advanced/features.js';
 export { SinHashEdit, sinHashEdit, type HashEdit, type HashEditResult, type FileSection, CLI_HELP as HASH_EDIT_CLI_HELP } from './tools/sin_hash_edit.js';
-export { TelemetryManager, PrometheusExporter, GrafanaDashboardGenerator, FleetSync, TelemetryModule, type TelemetryEvent, type AgentMetrics, type FleetNode } from './advanced/telemetry.js';
+export { TelemetryManager as LegacyTelemetryManager, PrometheusExporter, GrafanaDashboardGenerator, FleetSync, TelemetryModule, type TelemetryEvent, type AgentMetrics, type FleetNode } from './advanced/telemetry.js';
 export { createCheckpoint, restoreCheckpoint, rollbackPartial, cleanupCheckpoints, type CheckpointMeta } from './utils/checkpoint-manager-v2.js';
 export { classifyFailureV2, type FailureType, type RootCause, type FailureAnalysis } from './utils/failure-classifier-v2.js';
 export { STRATEGY_MAP, runLspAutoFix, runDepReinstall, runTestDebugRerun, runScopeSplit, type StrategyResult } from './utils/healing-strategies.js';
@@ -59,7 +59,7 @@ export { SigstoreSigner, getSigstoreSigner, type SignOptions, type SignatureResu
 export { NATSMessageBus, getNATSMessageBus, type Message, type Subscription, type MessageStats } from './core/NATSMessageBus.js';
 export { DAGTaskScheduler, getDAGTaskScheduler, type Task, type TaskStatus, type ScheduleResult } from './core/DAGTaskScheduler.js';
 export { CRDTStateStore, CRDTStoreFactory, getCRDTFactory, getSessionStore, type StateEvent, type CRDTStateOptions } from './core/CRDTStateStore.js';
-export { TelemetryManager, getTelemetryManager, traced, type SLOConfig, type TelemetryConfig, type SLABreach } from './core/TelemetryManager.js';
+export { TelemetryManager as CoreTelemetryManager, getTelemetryManager, traced, type SLOConfig, type TelemetryConfig, type SLABreach } from './core/TelemetryManager.js';
 export { ChaosEngine, getChaosEngine, runChaosCLI, ChaosScenarios, type FaultType, type ChaosFault, type RecoveryCheck, type ChaosResult, type ChaosManifest } from './core/ChaosEngine.js';
 export { NativeStateMachine, TaskQueueManager, StateMachineModule, type State, type StateTransition, type QueuedTask } from './advanced/state_machine.js';
 export * from './types/index.js';

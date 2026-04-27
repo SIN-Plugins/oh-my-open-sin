@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SinGalaxyManifestGen = void 0;
 exports.loadJSON = loadJSON;
 const promises_1 = __importDefault(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
@@ -95,7 +96,7 @@ async function main() {
     else if (cmd === "validate") {
         const m = await loadJSON(MANIFEST_PATH, {});
         const required = ["cluster_topology", "policy_matrix", "consensus_engine", "supernova_triggers", "audit_schema", "telemetry_evolution", "fleet_sync"];
-        const missing = required.filter(k => !m[k]);
+        const missing = required.filter(k => !(k in m));
         if (missing.length > 0) {
             console.log(`❌ Missing sections: ${missing.join(", ")}`);
             process.exit(1);
@@ -107,5 +108,14 @@ async function main() {
         process.exit(1);
     }
 }
+// Export for use as module
+exports.SinGalaxyManifestGen = { evolveManifest, validateManifest: async () => {
+        const m = await loadJSON(MANIFEST_PATH, {});
+        const required = ["cluster_topology", "policy_matrix", "consensus_engine", "supernova_triggers", "audit_schema", "telemetry_evolution", "fleet_sync"];
+        const missing = required.filter(k => !(k in m));
+        if (missing.length > 0)
+            throw new Error(`Missing sections: ${missing.join(", ")}`);
+        return true;
+    } };
 main().catch(e => { console.error("❌", e.message); process.exit(1); });
 //# sourceMappingURL=sin-galaxy-manifest-gen.js.map

@@ -36,39 +36,46 @@ async function initSessionContext(sessionId, workspace, description, agentType) 
             ctx.metadata.skill_health = health;
             ctx.activeSkills = resolved.map(s => s.id);
             (0, telemetry_js_1.structuredLog)('info', 'session_skills_initialized', {
-                session_id: sessionId,
+                sessionId: sessionId,
                 skills: ctx.activeSkills,
                 mcp_count: Object.keys(health).length
             });
         }
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('warn', 'skill_init_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('warn', 'skill_init_failed', { sessionId: sessionId, error: e.message });
     }
     try {
-        const routingDecision = await (0, router_v2_js_1.routeTaskV2)({ description, agent_type: agentType, workspace });
+        const routingDecision = await (0, router_v2_js_1.routeTaskV2)({
+            action: description,
+            budget_pct: ctx.metadata.budget_consumed_usd || 50,
+            breakerStates: {},
+            config: { agents: {} },
+            target_paths: [workspace]
+        });
         ctx.routingDecision = routingDecision;
         ctx.metadata.routing_decision = routingDecision;
         (0, telemetry_js_1.structuredLog)('info', 'session_routing_decided', {
-            session_id: sessionId,
+            sessionId: sessionId,
             selected_agent: routingDecision.agent,
-            confidence: routingDecision.confidence
+            intent: routingDecision.intent,
+            complexity: routingDecision.metrics.complexity
         });
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('warn', 'routing_init_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('warn', 'routing_init_failed', { sessionId: sessionId, error: e.message });
     }
     try {
         const checkpoint = await (0, checkpoint_manager_v2_js_1.createCheckpoint)(sessionId, workspace, false);
         ctx.checkpointId = checkpoint.id;
         ctx.metadata.checkpoint_id = checkpoint.id;
         (0, telemetry_js_1.structuredLog)('info', 'session_checkpoint_saved', {
-            session_id: sessionId,
+            sessionId: sessionId,
             checkpoint_id: checkpoint.id
         });
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('warn', 'checkpoint_init_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('warn', 'checkpoint_init_failed', { sessionId: sessionId, error: e.message });
     }
     sessionContexts.set(sessionId, ctx);
     return ctx;
@@ -82,9 +89,9 @@ async function prepareTaskExecution(sessionId, description) {
     const preparedDescription = skillContext
         ? `${description}\n\n${skillContext}`.trim()
         : description;
-    const policyResult = await policyEngine.evaluate('task_execution', {
-        session_id: sessionId,
-        description,
+    const policyResult = await policyEngine.evaluate({
+        sessionId: sessionId,
+        action: description,
         agent_type: ctx.metadata.routing_decision?.agent
     });
     if (!policyResult.allowed) {
@@ -98,7 +105,7 @@ async function prepareTaskExecution(sessionId, description) {
             ctx.metadata.checkpoint_id = ctx.checkpointId;
         }
         catch (e) {
-            (0, telemetry_js_1.structuredLog)('warn', 'pre_execution_checkpoint_failed', { session_id: sessionId, error: e.message });
+            (0, telemetry_js_1.structuredLog)('warn', 'pre_execution_checkpoint_failed', { sessionId: sessionId, error: e.message });
         }
     }
     return { preparedDescription, context: ctx };
@@ -119,7 +126,7 @@ async function executeWithHealing(sessionId, agentExecuteFn, maxRetries = 3) {
                     ctx.checkpointId = state.id;
                 }
                 catch (e) {
-                    (0, telemetry_js_1.structuredLog)('warn', 'post_execution_checkpoint_failed', { session_id: sessionId, error: e.message });
+                    (0, telemetry_js_1.structuredLog)('warn', 'post_execution_checkpoint_failed', { sessionId: sessionId, error: e.message });
                 }
             }
             return {
@@ -134,32 +141,25 @@ async function executeWithHealing(sessionId, agentExecuteFn, maxRetries = 3) {
             lastError = e;
             healingAttempts++;
             (0, telemetry_js_1.structuredLog)('error', 'task_execution_failed', {
-                session_id: sessionId,
+                sessionId: sessionId,
                 attempt,
                 error: e.message
             });
             if (attempt < maxRetries) {
                 try {
-                    const healingResult = await (0, healing_loop_v2_js_1.executeHealingStepV2)(ctx.healingCtx, {
-                        error: e.message,
-                        attempt,
-                        files_changed: [],
-                        test_failures: []
-                    });
-                    if (healingResult.success) {
+                    const healingResult = await (0, healing_loop_v2_js_1.executeHealingStepV2)(ctx.healingCtx, e.message);
+                    if (healingResult.should_retry) {
                         (0, telemetry_js_1.structuredLog)('info', 'healing_step_success', {
-                            session_id: sessionId,
-                            strategy: healingResult.strategy
+                            sessionId: sessionId,
+                            strategy: healingResult.strategy_result?.strategy || 'unknown'
                         });
-                        if (healingResult.backoffMs && healingResult.backoffMs > 0) {
-                            await new Promise(resolve => setTimeout(resolve, healingResult.backoffMs));
-                        }
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                         continue;
                     }
                 }
                 catch (healingError) {
                     (0, telemetry_js_1.structuredLog)('error', 'healing_loop_failed', {
-                        session_id: sessionId,
+                        sessionId: sessionId,
                         error: healingError.message
                     });
                 }
@@ -174,10 +174,10 @@ async function cleanupSession(sessionId) {
         return;
     try {
         const state = await (0, checkpoint_manager_v2_js_1.createCheckpoint)(sessionId, ctx.workspace, true);
-        (0, telemetry_js_1.structuredLog)('info', 'session_final_checkpoint', { session_id: sessionId, checkpoint_id: state.id });
+        (0, telemetry_js_1.structuredLog)('info', 'session_final_checkpoint', { sessionId: sessionId, checkpoint_id: state.id });
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('warn', 'final_checkpoint_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('warn', 'final_checkpoint_failed', { sessionId: sessionId, error: e.message });
     }
     try {
         if (ctx.activeSkills && ctx.activeSkills.length > 0) {
@@ -186,14 +186,14 @@ async function cleanupSession(sessionId) {
         }
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('warn', 'skill_cleanup_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('warn', 'skill_cleanup_failed', { sessionId: sessionId, error: e.message });
     }
     try {
         await telemetry.shutdown();
         (0, telemetry_js_1.structuredLog)('info', 'session_telemetry_flushed', { session_id: sessionId });
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('warn', 'telemetry_flush_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('warn', 'telemetry_flush_failed', { sessionId: sessionId, error: e.message });
     }
     sessionContexts.delete(sessionId);
 }
@@ -217,11 +217,11 @@ async function resumeSessionFromCheckpoint(sessionId, workspace) {
             }
         }
         sessionContexts.set(sessionId, ctx);
-        (0, telemetry_js_1.structuredLog)('info', 'session_resumed', { session_id: sessionId, checkpoint_id: sessionId });
+        (0, telemetry_js_1.structuredLog)('info', 'session_resumed', { sessionId: sessionId, checkpoint_id: sessionId });
         return ctx;
     }
     catch (e) {
-        (0, telemetry_js_1.structuredLog)('error', 'session_resume_failed', { session_id: sessionId, error: e.message });
+        (0, telemetry_js_1.structuredLog)('error', 'session_resume_failed', { sessionId: sessionId, error: e.message });
         return null;
     }
 }

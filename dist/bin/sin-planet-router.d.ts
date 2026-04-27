@@ -1,5 +1,5 @@
 #!/usr/bin/env tsx
-interface RouteDecision {
+export interface RouteDecision {
     target_planet: string;
     status: "allow" | "throttle" | "reroute" | "block";
     reason: string;
@@ -7,7 +7,7 @@ interface RouteDecision {
     risk_score: number;
     confidence: number;
 }
-interface GravityPolicy {
+export interface GravityPolicy {
     allowed_domains: string[];
     max_budget_pct: number;
     max_risk_score: number;
@@ -29,5 +29,4 @@ export declare function dispatchCrossPlanet(taskId: string, domain: string, desc
     session_id?: string;
     error?: string;
 }>;
-export {};
 //# sourceMappingURL=sin-planet-router.d.ts.map
