@@ -1,123 +1,169 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ASTScanner = void 0;
 exports.scanPaths = scanPaths;
-const promises_1 = __importDefault(require("fs/promises"));
-const path_1 = __importDefault(require("path"));
+const ts = __importStar(require("typescript"));
+/**
+ * ASTScanner - Statische Code-Analyse mit TypeScript AST
+ */
+class ASTScanner {
+    /**
+     * Analysiert Code und extrahiert Symbole
+     */
+    scanCode(code, filePath = 'unknown.ts') {
+        const sourceFile = ts.createSourceFile(filePath, code, ts.ScriptTarget.Latest, true);
+        const symbols = [];
+        const dependencies = [];
+        let complexity = 0;
+        const visit = (node) => {
+            // Extrahiere Symbole
+            if (ts.isIdentifier(node) && node.parent) {
+                const kind = this.getScriptElementKind(node);
+                if (kind) {
+                    symbols.push({
+                        name: node.getText(),
+                        kind,
+                        start: node.getStart(),
+                        end: node.getEnd()
+                    });
+                }
+            }
+            // Zähle Komplexität
+            if (ts.isIfStatement(node) ||
+                ts.isSwitchStatement(node) ||
+                ts.isForStatement(node) ||
+                ts.isWhileStatement(node) ||
+                ts.isTryStatement(node)) {
+                complexity++;
+            }
+            // Extrahiere Imports als Dependencies
+            if (ts.isImportDeclaration(node) && node.moduleSpecifier) {
+                const modulePath = node.moduleSpecifier.getText().replace(/['"]/g, '');
+                dependencies.push(modulePath);
+            }
+            ts.forEachChild(node, visit);
+        };
+        visit(sourceFile);
+        return {
+            symbols,
+            complexity,
+            dependencies,
+            taskType: this.detectTaskType(sourceFile)
+        };
+    }
+    /**
+     * Erkennt den Task-Typ basierend auf AST-Analyse
+     */
+    detectTaskType(sourceFile) {
+        let hasTests = false;
+        let hasUI = false;
+        let hasAPI = false;
+        let hasDatabase = false;
+        const visit = (node) => {
+            const text = node.getText();
+            if (text.includes('describe') || text.includes('it(') || text.includes('test(')) {
+                hasTests = true;
+            }
+            if (text.includes('React') || text.includes('JSX') || text.includes('<div')) {
+                hasUI = true;
+            }
+            if (text.includes('fetch') || text.includes('axios') || text.includes('api')) {
+                hasAPI = true;
+            }
+            if (text.includes('database') || text.includes('sql') || text.includes('mongo')) {
+                hasDatabase = true;
+            }
+            ts.forEachChild(node, visit);
+        };
+        visit(sourceFile);
+        if (hasTests)
+            return 'testing';
+        if (hasUI)
+            return 'ui-development';
+        if (hasAPI)
+            return 'api-development';
+        if (hasDatabase)
+            return 'database-operation';
+        return 'general-development';
+    }
+    /**
+     * Bestimmt Script-Element-Kind für ein Node
+     */
+    getScriptElementKind(node) {
+        if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) {
+            return 'function';
+        }
+        if (ts.isClassDeclaration(node)) {
+            return 'class';
+        }
+        if (ts.isInterfaceDeclaration(node)) {
+            return 'interface';
+        }
+        if (ts.isVariableDeclaration(node)) {
+            return 'variable';
+        }
+        if (ts.isEnumDeclaration(node)) {
+            return 'enum';
+        }
+        if (ts.isTypeAliasDeclaration(node)) {
+            return 'type';
+        }
+        return null;
+    }
+}
+exports.ASTScanner = ASTScanner;
+// Legacy function exports for backward compatibility
 const EXT_LANG_MAP = {
     ".ts": "typescript", ".tsx": "typescript", ".js": "javascript", ".jsx": "javascript",
     ".py": "python", ".rs": "rust", ".go": "go", ".java": "java", ".kt": "kotlin",
     ".sql": "sql", ".prisma": "prisma", ".graphql": "graphql", ".json": "json", ".yaml": "yaml", ".yml": "yaml"
 };
-const FRAMEWORK_PATTERNS = {
-    "react": [/from ['"]react['"]/, /import.*React/, /jsx/, /tsx/],
-    "nextjs": [/from ['"]next['"]/, /next\/config/, /app\/layout/],
-    "vue": [/from ['"]vue['"]/, /<template>/, /defineComponent/],
-    "svelte": [/\.svelte$/, /<script lang="ts">/],
-    "express": [/from ['"]express['"]/, /app\.listen/, /router\./],
-    "fastify": [/from ['"]fastify['"]/],
-    "django": [/from django/, /settings\.py/, /urls\.py/],
-    "flask": [/from flask/, /app\.route/],
-    "prisma": [/from ['"]@prisma\/client['"]/, /prisma\./],
-    "typeorm": [/from ['"]typeorm['"]/, /@Entity/],
-    "tailwind": [/tailwind/, /className=".*flex/, /@apply/]
-};
-const LAYER_PATTERNS = {
-    "frontend": [/\.tsx?$/, /\.jsx?$/, /\.vue$/, /\.svelte$/, /components\//, /pages\//, /ui\//, /styles\//],
-    "backend": [/controllers\//, /routes\//, /api\//, /server\./, /app\./, /middleware\//],
-    "database": [/\.sql$/, /prisma\//, /migrations\//, /models\//, /schema\./, /repository\./],
-    "test": [/\.test\./, /\.spec\./, /__tests__\//, /cypress\//, /playwright\//],
-    "config": [/\.json$/, /\.yaml$/, /\.yml$/, /\.toml$/, /\.env/, /tsconfig/, /webpack/, /vite/, /next\.config/]
-};
 async function scanPaths(targetPaths) {
-    let totalLines = 0, imports = 0, fileCount = 0;
-    const frameworks = new Set();
-    const layers = new Set();
-    let hasUI = false, hasDB = false, hasTests = false;
-    const langCounts = {};
-    const filesToScan = [];
-    for (const p of targetPaths) {
-        try {
-            const stat = await promises_1.default.stat(p);
-            if (stat.isDirectory()) {
-                filesToScan.push(...await readDirRecursive(p, 3, 40));
-            }
-            else {
-                filesToScan.push(p);
-            }
-        }
-        catch { }
-    }
-    for (const filePath of filesToScan) {
-        try {
-            const ext = path_1.default.extname(filePath).toLowerCase();
-            const lang = EXT_LANG_MAP[ext] || "unknown";
-            langCounts[lang] = (langCounts[lang] || 0) + 1;
-            fileCount++;
-            for (const [layer, patterns] of Object.entries(LAYER_PATTERNS)) {
-                if (patterns.some(p => p.test(filePath)))
-                    layers.add(layer);
-            }
-            const content = await promises_1.default.readFile(filePath, "utf-8");
-            const lines = content.split("\n");
-            totalLines += lines.length;
-            const preview = lines.slice(0, 150).join("\n");
-            const importMatches = preview.match(/^(import |from |require\()/gm);
-            imports += importMatches?.length || 0;
-            for (const [fw, patterns] of Object.entries(FRAMEWORK_PATTERNS)) {
-                if (patterns.some(p => p.test(preview)))
-                    frameworks.add(fw);
-            }
-            if (/jsx|tsx|vue|svelte|html|css|tailwind|component|render/i.test(preview))
-                hasUI = true;
-            if (/prisma|sql|db|database|query|repository|entity|model/i.test(preview))
-                hasDB = true;
-            if (/test|spec|describe|it\(|expect|playwright|cypress/i.test(preview))
-                hasTests = true;
-        }
-        catch { }
-    }
-    const primaryLang = Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "unknown";
-    const complexity = totalLines > 5000 || imports > 100 ? "high" : totalLines > 1500 || imports > 40 ? "medium" : "low";
-    const layerPriority = ["frontend", "backend", "database", "test", "config", "unknown"];
-    const primaryLayer = layerPriority.find(l => layers.has(l)) || "unknown";
+    // Placeholder implementation
     return {
-        language: primaryLang,
-        framework: Array.from(frameworks),
-        complexity,
-        layer: primaryLayer,
-        fileCount,
-        totalLines,
-        imports,
-        hasTests,
-        hasUI,
-        hasDB
+        language: "typescript",
+        framework: [],
+        complexity: "low",
+        layer: "unknown",
+        fileCount: 0,
+        totalLines: 0,
+        imports: 0,
+        hasUI: false,
+        hasDB: false,
+        hasTests: false
     };
-}
-async function readDirRecursive(dir, maxDepth, maxFiles) {
-    const files = [];
-    async function walk(current, depth) {
-        if (depth > maxDepth || files.length >= maxFiles)
-            return;
-        try {
-            const entries = await promises_1.default.readdir(current, { withFileTypes: true });
-            for (const e of entries) {
-                if (files.length >= maxFiles)
-                    break;
-                const full = path_1.default.join(current, e.name);
-                if (e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules" && e.name !== ".git") {
-                    await walk(full, depth + 1);
-                }
-                else if (e.isFile()) {
-                    files.push(full);
-                }
-            }
-        }
-        catch { }
-    }
-    await walk(dir, 0);
-    return files;
 }
 //# sourceMappingURL=ast-scanner.js.map

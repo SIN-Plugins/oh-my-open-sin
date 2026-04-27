@@ -47,7 +47,7 @@ async function initSessionContext(sessionId, workspace, description, agentType) 
     }
     try {
         const routingDecision = await (0, router_v2_js_1.routeTaskV2)({
-            action: description,
+            description,
             budget_pct: ctx.metadata.budget_consumed_usd || 50,
             breakerStates: {},
             config: { agents: {} },
@@ -90,8 +90,13 @@ async function prepareTaskExecution(sessionId, description) {
         ? `${description}\n\n${skillContext}`.trim()
         : description;
     const policyResult = await policyEngine.evaluate({
+        agentId: sessionId,
+        action: 'task.execute',
+        resource: `session:${sessionId}`,
+        capabilities: ['task:execute'],
+        timestamp: Date.now(),
+        subject: sessionId,
         sessionId: sessionId,
-        action: description,
         agent_type: ctx.metadata.routing_decision?.agent
     });
     if (!policyResult.allowed) {

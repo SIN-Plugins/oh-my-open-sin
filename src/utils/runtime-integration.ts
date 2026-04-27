@@ -120,8 +120,13 @@ export async function prepareTaskExecution(
     : description;
   
   const policyResult = await policyEngine.evaluate({
+    agentId: sessionId,
+    action: 'task.execute',
+    resource: `session:${sessionId}`,
+    capabilities: ['task:execute'],
+    timestamp: Date.now(),
+    subject: sessionId,
     sessionId: sessionId,
-    description,
     agent_type: ctx.metadata.routing_decision?.agent
   });
   
@@ -146,7 +151,8 @@ export async function prepareTaskExecution(
 export async function executeWithHealing(
   sessionId: string,
   agentExecuteFn: () => Promise<SubAgentResult>,
-  maxRetries = 3
+  maxRetries = 3,
+  onComplete?: (success: boolean) => Promise<void>
 ): Promise<IntegratedTaskResult> {
   const ctx = sessionContexts.get(sessionId);
   let lastError: any = null;
