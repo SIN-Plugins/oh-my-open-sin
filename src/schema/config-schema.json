@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OH My Open SIN Configuration",
+  "description": "Configuration schema for OH My Open SIN framework",
+  "type": "object",
+  "required": ["version", "agents"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the config schema"
+    },
+    "global": {
+      "type": "object",
+      "description": "Global configuration settings",
+      "properties": {
+        "budget": {
+          "type": "object",
+          "properties": {
+            "warning_threshold_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+            "critical_threshold_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+          }
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "log_file": { "type": "string" }
+          }
+        },
+        "healing": {
+          "type": "object",
+          "properties": {
+            "max_attempts_base": { "type": "integer", "minimum": 1 },
+            "strategy_learning_enabled": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "description": "Agent definitions",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["models"],
+        "properties": {
+          "models": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "category": {
+            "type": "string",
+            "enum": ["quick", "deep", "visual-engineering", "ultrabrain"]
+          },
+          "max_concurrent": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 1000
+          }
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "description": "Project-specific configuration",
+      "properties": {
+        "verification": {
+          "type": "object",
+          "properties": {
+            "test_cmd": { "type": "string" },
+            "min_coverage_delta": { "type": "number" },
+            "max_new_lsp_errors": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "skills": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "description": "Session-specific overrides (not persisted)",
+      "properties": {
+        "active_agents": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "context_limit_mb": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

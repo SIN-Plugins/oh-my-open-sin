@@ -1,0 +1,87 @@
+{
+  "version": "1.0.0",
+  "global": {
+    "budget": {
+      "warning_threshold_pct": 80,
+      "critical_threshold_pct": 95
+    },
+    "telemetry": {
+      "enabled": true,
+      "log_file": "/root/.config/oh-my-open-sin/logs/telemetry.jsonl"
+    },
+    "healing": {
+      "max_attempts_base": 3,
+      "strategy_learning_enabled": true
+    }
+  },
+  "agents": {
+    "hermes": {
+      "models": [
+        "openai/gpt-5.4-mini-fast"
+      ],
+      "category": "quick"
+    },
+    "hermes_scout": {
+      "models": [
+        "openai/gpt-5.4-mini-fast"
+      ],
+      "category": "quick"
+    },
+    "iris": {
+      "models": [
+        "openai/gpt-5.4"
+      ],
+      "category": "visual-engineering"
+    },
+    "atlas": {
+      "models": [
+        "openai/o3-pro"
+      ],
+      "category": "deep"
+    },
+    "prometheus": {
+      "models": [
+        "openai/o3-pro"
+      ],
+      "category": "ultrabrain"
+    },
+    "asclepius": {
+      "models": [
+        "openai/gpt-5.4"
+      ],
+      "category": "deep"
+    },
+    "hades": {
+      "models": [
+        "openai/gpt-5.4"
+      ],
+      "category": "deep"
+    },
+    "aegis": {
+      "models": [
+        "openai/gpt-5.4"
+      ],
+      "category": "deep"
+    },
+    "hephaestus": {
+      "models": [
+        "openai/o3-pro"
+      ],
+      "category": "deep"
+    },
+    "athena": {
+      "models": [
+        "openai/gpt-5.4-mini-fast"
+      ],
+      "category": "quick"
+    }
+  },
+  "project": {
+    "verification": {
+      "test_cmd": "npm test",
+      "min_coverage_delta": 0,
+      "max_new_lsp_errors": 0
+    },
+    "skills": []
+  }
+}

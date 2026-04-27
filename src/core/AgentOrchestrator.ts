@@ -11,6 +11,7 @@ import {
   cleanupSession,
   type SessionContext 
 } from '../utils/runtime-integration.js';
+import { loadConfig, startConfigWatch, onConfigChange, type SinConfig } from '../utils/config-loader.js';
 
 /**
  * Orchestrates multiple subagents and manages task routing
@@ -31,6 +32,21 @@ export class AgentOrchestrator {
   private messageBus: NATSMessageBus;
   private telemetry: TelemetryManager;
   private scheduler: DAGTaskScheduler;
+  private config: SinConfig | null = null;
+  
+  async initialize(): Promise<void> {
+    // Load configuration
+    this.config = await loadConfig();
+    
+    // Start hot-reload watch
+    await startConfigWatch();
+    
+    // Listen for config changes
+    onConfigChange((newConfig) => {
+      this.config = newConfig;
+      console.log('[Orchestrator] Configuration reloaded');
+    });
+  }
   
   constructor() {
     this.policyEngine = getPolicyEngine();

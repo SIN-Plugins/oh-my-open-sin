@@ -1,7 +1,6 @@
 ```
 # Build artifacts
 dist/
-build/
 *.d.ts
 *.d.ts.map
 *.js
@@ -10,40 +9,52 @@ build/
 # Dependencies
 node_modules/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Logs
-*.log
-
 # Environment
 .env
 .env.local
 *.env.*
 
-# Editors
+# Logs
+*.log
+
+# IDE
 .vscode/
 .idea/
+
+# Python cache (if present)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.tmp
 *.swp
 *.swo
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# Testing
-.coverage
+# Coverage
 coverage/
 htmlcov/
+.coverage
 
-# Python cache
+# Testing
 .mypy_cache/
 .pytest_cache/
 
-# Compressed files
+# Java/other compiled
+*.class
+*.jar
+*.war
+*.ear
+*.so
+*.dll
+*.exe
+
+# Compressed
 *.zip
 *.gz
 *.tar
@@ -66,4 +77,15 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+
+# Gradle
+.gradle/
+build/
+
+# Target directories
+target/
+
+# Virtual environments
+.venv/
+venv/
 ```

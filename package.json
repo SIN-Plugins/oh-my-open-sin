@@ -4,6 +4,9 @@
   "description": "Native OpenCode SubAgent Framework - Replacing broken plugins with session-aware, non-blocking subagents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "sin-config": "./dist/cli/sin-config.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -33,6 +36,10 @@
     "@opentelemetry/resources": "^2.7.0",
     "@opentelemetry/sdk-node": "^0.215.0",
     "@opentelemetry/semantic-conventions": "^1.40.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "chokidar": "^5.0.0",
+    "commander": "^14.0.3",
     "yjs": "^13.6.30"
   }
 }

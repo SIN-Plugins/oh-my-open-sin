@@ -6,6 +6,7 @@ const NATSMessageBus_js_1 = require("./NATSMessageBus.js");
 const TelemetryManager_js_1 = require("./TelemetryManager.js");
 const DAGTaskScheduler_js_1 = require("./DAGTaskScheduler.js");
 const runtime_integration_js_1 = require("../utils/runtime-integration.js");
+const config_loader_js_1 = require("../utils/config-loader.js");
 /**
  * Orchestrates multiple subagents and manages task routing
  * Implements non-blocking, session-aware execution with enterprise features:
@@ -25,6 +26,18 @@ class AgentOrchestrator {
     messageBus;
     telemetry;
     scheduler;
+    config = null;
+    async initialize() {
+        // Load configuration
+        this.config = await (0, config_loader_js_1.loadConfig)();
+        // Start hot-reload watch
+        await (0, config_loader_js_1.startConfigWatch)();
+        // Listen for config changes
+        (0, config_loader_js_1.onConfigChange)((newConfig) => {
+            this.config = newConfig;
+            console.log('[Orchestrator] Configuration reloaded');
+        });
+    }
     constructor() {
         this.policyEngine = (0, PolicyEngine_js_1.getPolicyEngine)();
         this.messageBus = (0, NATSMessageBus_js_1.getNATSMessageBus)();

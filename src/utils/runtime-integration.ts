@@ -121,7 +121,11 @@ export async function prepareTaskExecution(
   
   const policyResult = await policyEngine.evaluate({
     sessionId: sessionId,
-    description,
+    agentId: ctx.metadata.routing_decision?.agent || 'unknown',
+    action: 'execute_task',
+    resource: 'task',
+    capabilities: [],
+    timestamp: Date.now(),
     agent_type: ctx.metadata.routing_decision?.agent
   });
   

@@ -20,6 +20,8 @@ export declare class AgentOrchestrator {
     private messageBus;
     private telemetry;
     private scheduler;
+    private config;
+    initialize(): Promise<void>;
     constructor();
     register(agent: SubAgent): void;
     getAgent(name: string): SubAgent | undefined;
