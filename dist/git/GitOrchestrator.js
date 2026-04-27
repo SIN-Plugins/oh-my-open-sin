@@ -57,15 +57,19 @@ class GitOrchestrator {
     /**
      * Create a new worktree for isolated operations with policy check
      */
-    async createWorktree(config) {
+    async createWorktree(config, sessionId, taskId) {
         const startTime = Date.now();
         // Policy check for worktree creation
         const policyCheck = await this.policyEngine.evaluate({
-            agentId: context.sessionId,
+            agentId: sessionId || 'unknown',
             action: 'git.worktree.create',
             resource: `branch:${config.branch}`,
+            capabilities: ['git:worktree:create'],
+            timestamp: Date.now(),
             subject: 'orchestrator',
-            context: {
+            sessionId: sessionId,
+            taskId: taskId,
+            metadata: {
                 workspace: this.workspace,
                 detached: config.detached,
                 path: config.path
@@ -148,15 +152,19 @@ class GitOrchestrator {
     /**
      * Create a feature branch with standard naming and policy check
      */
-    async createFeatureBranch(featureName) {
+    async createFeatureBranch(featureName, sessionId, taskId) {
         const startTime = Date.now();
         // Policy check for branch creation
         const policyCheck = await this.policyEngine.evaluate({
-            agentId: context.sessionId,
+            agentId: sessionId || 'unknown',
             action: 'git.branch.create',
             resource: `feature:${featureName}`,
+            capabilities: ['git:branch:create'],
+            timestamp: Date.now(),
             subject: 'orchestrator',
-            context: { workspace: this.workspace }
+            sessionId: sessionId,
+            taskId: taskId,
+            metadata: { workspace: this.workspace }
         });
         if (!policyCheck.allowed) {
             this.telemetry.recordEvent('git_policy_violation', {
@@ -213,7 +221,7 @@ class GitOrchestrator {
             // Sign commit with Sigstore for provenance
             if (signWithSigstore) {
                 const commitHash = await this.getLatestCommitHash();
-                const signature = await this.sigstoreSigner.signCommit(commitHash, message);
+                const signature = await this.sigstoreSigner.signCommit(commitHash, 'orchestrator', 'orchestrator@sin.local');
                 this.telemetry.recordEvent('git_commit_signed', {
                     workspace: this.workspace,
                     commitHash,
@@ -251,16 +259,20 @@ class GitOrchestrator {
     /**
      * Push branch to remote with policy check
      */
-    async pushBranch(branch, setUpstream = true) {
+    async pushBranch(branch, setUpstream = true, sessionId, taskId) {
         const startTime = Date.now();
         const currentBranch = branch || await this.getCurrentBranch();
         // Policy check for push (main branch protection)
         const policyCheck = await this.policyEngine.evaluate({
-            agentId: context.sessionId,
+            agentId: sessionId || 'unknown',
             action: 'git.push',
             resource: `branch:${currentBranch}`,
+            capabilities: ['git:push'],
+            timestamp: Date.now(),
             subject: 'orchestrator',
-            context: { workspace: this.workspace, setUpstream }
+            sessionId: sessionId,
+            taskId: taskId,
+            metadata: { workspace: this.workspace, setUpstream }
         });
         if (!policyCheck.allowed) {
             this.telemetry.recordEvent('git_policy_violation', {

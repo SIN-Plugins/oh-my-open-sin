@@ -12,7 +12,7 @@ const BLACKBOARD_DIR = path.join(LOCAL_DIR, "swarm-blackboard");
 const AUDIT_CHAIN = path.join(LOCAL_DIR, "audit-chain.jsonl");
 const HMAC_SECRET = process.env.SIN_HMAC_SECRET || "sin-galaxy-zero-trust";
 
-interface RouteDecision {
+export interface RouteDecision {
   target_planet: string;
   status: "allow" | "throttle" | "reroute" | "block";
   reason: string;
@@ -21,7 +21,7 @@ interface RouteDecision {
   confidence: number;
 }
 
-interface GravityPolicy {
+export interface GravityPolicy {
   allowed_domains: string[];
   max_budget_pct: number;
   max_risk_score: number;

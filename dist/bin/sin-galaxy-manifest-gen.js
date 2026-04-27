@@ -55,6 +55,15 @@ async function evolveManifest() {
     const tel = await getTelemetryMetrics();
     const state = await loadJSON(FABRIC_STATE, { global_budget_usd: 50, budget_consumed_usd: 0 });
     const patterns = await loadJSON(PATTERNS_FILE, {});
+    // Initialize default structure if missing
+    if (!base.supernova_triggers)
+        base.supernova_triggers = { budget_exhaustion_pct: 70, error_rate_spike: 0.3 };
+    if (!base.consensus_engine)
+        base.consensus_engine = { min_confidence_score: 0.85 };
+    if (!base.cluster_topology)
+        base.cluster_topology = { domains: { backend: { max_concurrency: 5 }, frontend: { max_concurrency: 5 } } };
+    if (!base.audit_schema)
+        base.audit_schema = { board_report_mapping: { cost_efficiency: { healing_attempts: -5 } } };
     // Dynamic threshold adjustment based on telemetry
     const budgetPct = state.global_budget_usd > 0 ? (state.budget_consumed_usd / state.global_budget_usd) * 100 : 0;
     if (budgetPct > 70) {
@@ -73,7 +82,8 @@ async function evolveManifest() {
         base.audit_schema.board_report_mapping.cost_efficiency.healing_attempts = patterns.verification_thresholds.min_coverage_delta || -5;
     }
     base.generated_at = new Date().toISOString();
-    base.version = "1.0." + (parseInt(base.version?.split(".")[2] || "0") + 1);
+    base.version = base.version || "1.0.0";
+    base.version = "1.0." + (parseInt(base.version.split(".")[2] || "0") + 1);
     await promises_1.default.writeFile(MANIFEST_PATH, JSON.stringify(base, null, 2));
     console.log(`✅ Galaxy manifest evolved to v${base.version} (budget:${budgetPct.toFixed(1)}% err:${(tel.error_rate * 100).toFixed(1)}% lat:${Math.round(tel.avg_latency)}ms)`);
 }

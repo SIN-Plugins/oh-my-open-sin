@@ -75,9 +75,9 @@ async function main() {
   if (cmd === "evolve") {
     await evolveManifest();
   } else if (cmd === "validate") {
-    const m = await loadJSON(MANIFEST_PATH, {});
+    const m = await loadJSON(MANIFEST_PATH, {}) as Record<string, unknown>;
     const required = ["cluster_topology","policy_matrix","consensus_engine","supernova_triggers","audit_schema","telemetry_evolution","fleet_sync"];
-    const missing = required.filter(k => !m[k]);
+    const missing = required.filter(k => !(k in m));
     if (missing.length > 0) { console.log(`❌ Missing sections: ${missing.join(", ")}`); process.exit(1); }
     console.log("✅ Manifest schema valid");
   } else {
