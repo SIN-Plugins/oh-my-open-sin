@@ -130,7 +130,7 @@ export {
 
 // Telemetry & Monitoring
 export {
-  TelemetryManager,
+  TelemetryManager as LegacyTelemetryManager,
   PrometheusExporter,
   GrafanaDashboardGenerator,
   FleetSync,
@@ -368,7 +368,7 @@ export {
 
 // Telemetry Manager - Issue #13
 export {
-  TelemetryManager,
+  TelemetryManager as CoreTelemetryManager,
   getTelemetryManager,
   traced,
   type SLOConfig,
