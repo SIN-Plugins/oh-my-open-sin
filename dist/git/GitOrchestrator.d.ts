@@ -21,7 +21,7 @@ export declare class GitOrchestrator {
     /**
      * Create a new worktree for isolated operations with policy check
      */
-    createWorktree(config: GitWorktreeConfig): Promise<void>;
+    createWorktree(config: GitWorktreeConfig, sessionId?: string, taskId?: string): Promise<void>;
     /**
      * Remove a worktree
      */
@@ -33,7 +33,7 @@ export declare class GitOrchestrator {
     /**
      * Create a feature branch with standard naming and policy check
      */
-    createFeatureBranch(featureName: string): Promise<string>;
+    createFeatureBranch(featureName: string, sessionId?: string, taskId?: string): Promise<string>;
     /**
      * Commit changes with conventional commit format and optional Sigstore signing
      */
@@ -45,7 +45,7 @@ export declare class GitOrchestrator {
     /**
      * Push branch to remote with policy check
      */
-    pushBranch(branch?: string, setUpstream?: boolean): Promise<void>;
+    pushBranch(branch?: string, setUpstream?: boolean, sessionId?: string, taskId?: string): Promise<void>;
     /**
      * Create a pull request via CLI (requires gh CLI)
      */

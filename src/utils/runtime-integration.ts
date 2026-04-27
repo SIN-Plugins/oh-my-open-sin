@@ -1,18 +1,11 @@
 /**
- * Runtime Integration Layer
- * 
- * Verbindet alle Module im tatsächlichen Execution-Flow:
- * - Skill-Injection vor Agent-Execution
- * - Context-Aware Routing v2
- * - Self-Healing Loop bei Failures
- * - Checkpoint Auto-Save
- * - Native OpenCode Hooks
+ * Runtime Integration Layer - FIXED VERSION
  */
 
 import { discoverSkills, matchSkills, resolveDependencies, startSkillMCPs, stopSkillMCPs, getSkillPromptInjection, getSkillPermissions, getSkillHealth } from './skill-loader.js';
 import { routeTaskV2, type RoutingDecisionV2 } from './router-v2.js';
-import { healingLoopV2, type HealingResult } from './healing-loop-v2.js';
-import { saveCheckpoint, loadCheckpoint, type CheckpointState } from './checkpoint-manager-v2.js';
+import { initHealingLoopV2, executeHealingStepV2, type HealingContextV2 } from './healing-loop-v2.js';
+import { createCheckpoint, restoreCheckpoint, type CheckpointMeta } from './checkpoint-manager-v2.js';
 import { structuredLog } from './telemetry.js';
 import { TaskContext, SubAgentResult } from '../types/index.js';
 import { PolicyEngine, getPolicyEngine } from '../core/PolicyEngine.js';
@@ -25,6 +18,7 @@ export interface SessionContext {
   activeSkills?: string[];
   checkpointId?: string;
   routingDecision?: RoutingDecisionV2;
+  healingCtx?: HealingContextV2;
 }
 
 export interface IntegratedTaskResult extends SubAgentResult {
@@ -38,9 +32,6 @@ const sessionContexts: Map<string, SessionContext> = new Map();
 const policyEngine = getPolicyEngine();
 const telemetry = getTelemetryManager();
 
-/**
- * Initialisiert Session-Kontext mit Skills, Routing und Checkpoint
- */
 export async function initSessionContext(
   sessionId: string,
   workspace: string,
@@ -49,7 +40,6 @@ export async function initSessionContext(
 ): Promise<SessionContext> {
   const ctx: SessionContext = { sessionId, workspace, metadata: {} };
   
-  // 1. Skill Discovery & Injection
   try {
     const allSkills = await discoverSkills();
     const matched = matchSkills(description, agentType, allSkills);
@@ -77,39 +67,28 @@ export async function initSessionContext(
     structuredLog('warn', 'skill_init_failed', { session_id: sessionId, error: e.message });
   }
   
-  // 2. Context-Aware Routing
   try {
-    const routingDecision = await routeTaskV2(description, agentType, workspace);
+    const routingDecision = await routeTaskV2({ description, agent_type: agentType, workspace });
     ctx.routingDecision = routingDecision;
     ctx.metadata.routing_decision = routingDecision;
     
     structuredLog('info', 'session_routing_decided', {
       session_id: sessionId,
-      selected_agent: routingDecision.selectedAgent,
+      selected_agent: routingDecision.agent,
       confidence: routingDecision.confidence
     });
   } catch (e: any) {
     structuredLog('warn', 'routing_init_failed', { session_id: sessionId, error: e.message });
   }
   
-  // 3. Initial Checkpoint
   try {
-    const checkpointState: CheckpointState = {
-      sessionId,
-      workspace,
-      timestamp: Date.now(),
-      phase: 'initialized',
-      metadata: ctx.metadata,
-      taskHistory: []
-    };
-    
-    const checkpointId = await saveCheckpoint(checkpointState);
-    ctx.checkpointId = checkpointId;
-    ctx.metadata.checkpoint_id = checkpointId;
+    const checkpoint: CheckpointMeta = await createCheckpoint(sessionId, workspace, false);
+    ctx.checkpointId = checkpoint.id;
+    ctx.metadata.checkpoint_id = checkpoint.id;
     
     structuredLog('info', 'session_checkpoint_saved', {
       session_id: sessionId,
-      checkpoint_id: checkpointId
+      checkpoint_id: checkpoint.id
     });
   } catch (e: any) {
     structuredLog('warn', 'checkpoint_init_failed', { session_id: sessionId, error: e.message });
@@ -119,9 +98,6 @@ export async function initSessionContext(
   return ctx;
 }
 
-/**
- * Bereitet Task vor mit Skill-Injection, Policy-Check und Checkpoint
- */
 export async function prepareTaskExecution(
   sessionId: string,
   description: string
@@ -131,35 +107,26 @@ export async function prepareTaskExecution(
     throw new Error(`Session ${sessionId} not initialized`);
   }
   
-  // Skill-Injection in Description
   const skillContext = ctx.metadata.skill_injection || '';
   const preparedDescription = skillContext
     ? `${description}\n\n${skillContext}`.trim()
     : description;
   
-  // Policy-Check
   const policyResult = await policyEngine.evaluate('task_execution', {
     session_id: sessionId,
     description,
-    agent_type: ctx.metadata.routing_decision?.selectedAgent
+    agent_type: ctx.metadata.routing_decision?.agent
   });
   
   if (!policyResult.allowed) {
-    throw new Error(`Policy violation: ${policyResult.violations.map(v => v.message).join(', ')}`);
+    const violations = policyResult.violations || [];
+    throw new Error(`Policy violation: ${violations.map(v => v.message).join(', ')}`);
   }
   
-  // Pre-Execution Checkpoint
   if (ctx.checkpointId) {
     try {
-      const state: CheckpointState = {
-        sessionId,
-        workspace: ctx.workspace,
-        timestamp: Date.now(),
-        phase: 'pre_execution',
-        metadata: ctx.metadata,
-        taskHistory: [...(ctx.metadata.task_history || []), { description, timestamp: Date.now() }]
-      };
-      ctx.checkpointId = await saveCheckpoint(state);
+      const state: CheckpointMeta = await createCheckpoint(sessionId, ctx.workspace, false);
+      ctx.checkpointId = state.id;
       ctx.metadata.checkpoint_id = ctx.checkpointId;
     } catch (e: any) {
       structuredLog('warn', 'pre_execution_checkpoint_failed', { session_id: sessionId, error: e.message });
@@ -169,9 +136,6 @@ export async function prepareTaskExecution(
   return { preparedDescription, context: ctx };
 }
 
-/**
- * Führt Task aus mit Self-Healing bei Failures
- */
 export async function executeWithHealing(
   sessionId: string,
   agentExecuteFn: () => Promise<SubAgentResult>,
@@ -181,34 +145,20 @@ export async function executeWithHealing(
   let lastError: any = null;
   let healingAttempts = 0;
   
+  if (!ctx?.healingCtx) {
+    ctx!.healingCtx = await initHealingLoopV2(sessionId, ctx?.workspace, 'medium', 0);
+  }
+  
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const result = await agentExecuteFn();
       
-      // Success - Save Post-Execution Checkpoint
       if (ctx?.checkpointId) {
         try {
-          const state: CheckpointState = {
-            sessionId,
-            workspace: ctx.workspace,
-            timestamp: Date.now(),
-            phase: 'post_execution',
-            metadata: { ...ctx.metadata, result_summary: result.summary },
-            taskHistory: ctx.metadata.task_history || []
-          };
-          ctx.checkpointId = await saveCheckpoint(state);
+          const state: CheckpointMeta = await createCheckpoint(sessionId, ctx.workspace, true);
+          ctx.checkpointId = state.id;
         } catch (e: any) {
           structuredLog('warn', 'post_execution_checkpoint_failed', { session_id: sessionId, error: e.message });
-        }
-      }
-      
-      // Routing Feedback
-      if (ctx?.routingDecision) {
-        try {
-          const feedback = { success: true, duration_ms: result.duration_ms || 0 };
-          // routingFeedbackLoop(ctx.routingDecision, feedback);
-        } catch (e: any) {
-          structuredLog('warn', 'routing_feedback_failed', { session_id: sessionId, error: e.message });
         }
       }
       
@@ -231,20 +181,20 @@ export async function executeWithHealing(
       
       if (attempt < maxRetries) {
         try {
-          const healingResult: HealingResult = await healingLoopV2(e, {
-            sessionId,
+          const healingResult = await executeHealingStepV2(ctx!.healingCtx!, {
+            error: e.message,
             attempt,
-            lastError: e.message
+            files_changed: [],
+            test_failures: []
           });
           
-          if (healingResult.shouldRetry) {
-            structuredLog('info', 'healing_retry_scheduled', {
+          if (healingResult.success) {
+            structuredLog('info', 'healing_step_success', {
               session_id: sessionId,
-              strategy: healingResult.strategy,
-              backoff_ms: healingResult.backoffMs
+              strategy: healingResult.strategy
             });
             
-            if (healingResult.backoffMs > 0) {
+            if (healingResult.backoffMs && healingResult.backoffMs > 0) {
               await new Promise(resolve => setTimeout(resolve, healingResult.backoffMs));
             }
             continue;
@@ -259,34 +209,20 @@ export async function executeWithHealing(
     }
   }
   
-  // All retries exhausted
   throw lastError;
 }
 
-/**
- * Cleanup Session am Ende
- */
 export async function cleanupSession(sessionId: string): Promise<void> {
   const ctx = sessionContexts.get(sessionId);
   if (!ctx) return;
   
-  // Final Checkpoint
   try {
-    const state: CheckpointState = {
-      sessionId,
-      workspace: ctx.workspace,
-      timestamp: Date.now(),
-      phase: 'completed',
-      metadata: ctx.metadata,
-      taskHistory: ctx.metadata.task_history || []
-    };
-    await saveCheckpoint(state);
-    structuredLog('info', 'session_final_checkpoint', { session_id: sessionId });
+    const state: CheckpointMeta = await createCheckpoint(sessionId, ctx.workspace, true);
+    structuredLog('info', 'session_final_checkpoint', { session_id: sessionId, checkpoint_id: state.id });
   } catch (e: any) {
     structuredLog('warn', 'final_checkpoint_failed', { session_id: sessionId, error: e.message });
   }
   
-  // Skill Cleanup
   try {
     if (ctx.activeSkills && ctx.activeSkills.length > 0) {
       await stopSkillMCPs(sessionId);
@@ -296,9 +232,8 @@ export async function cleanupSession(sessionId: string): Promise<void> {
     structuredLog('warn', 'skill_cleanup_failed', { session_id: sessionId, error: e.message });
   }
   
-  // Telemetry Flush
   try {
-    await telemetry.flush();
+    await telemetry.shutdown();
     structuredLog('info', 'session_telemetry_flushed', { session_id: sessionId });
   } catch (e: any) {
     structuredLog('warn', 'telemetry_flush_failed', { session_id: sessionId, error: e.message });
@@ -307,26 +242,22 @@ export async function cleanupSession(sessionId: string): Promise<void> {
   sessionContexts.delete(sessionId);
 }
 
-/**
- * Resume Session von Checkpoint nach Crash
- */
 export async function resumeSessionFromCheckpoint(
   sessionId: string,
   workspace: string
 ): Promise<SessionContext | null> {
   try {
-    const checkpoint = await loadCheckpoint(sessionId);
-    if (!checkpoint) return null;
+    const restored = await restoreCheckpoint(sessionId, workspace);
+    if (!restored) return null;
     
     const ctx: SessionContext = {
       sessionId,
       workspace,
-      metadata: checkpoint.metadata || {},
-      checkpointId: checkpoint.id,
-      activeSkills: checkpoint.metadata?.active_skills
+      metadata: {},
+      checkpointId: sessionId,
+      activeSkills: []
     };
     
-    // Re-start Skills wenn vorhanden
     if (ctx.activeSkills && ctx.activeSkills.length > 0) {
       const allSkills = await discoverSkills();
       const toStart = allSkills.filter(s => ctx.activeSkills!.includes(s.id));
@@ -336,7 +267,7 @@ export async function resumeSessionFromCheckpoint(
     }
     
     sessionContexts.set(sessionId, ctx);
-    structuredLog('info', 'session_resumed', { session_id: sessionId, checkpoint_id: checkpoint.id });
+    structuredLog('info', 'session_resumed', { session_id: sessionId, checkpoint_id: sessionId });
     
     return ctx;
   } catch (e: any) {

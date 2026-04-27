@@ -21,6 +21,7 @@ export interface TaskContext {
     workspace: string;
     branch?: string;
     parentTaskId?: string;
+    description?: string;
     metadata?: Record<string, unknown>;
     task?: {
         id: string;

@@ -48,10 +48,14 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                 agentId: context.sessionId,
                 action: 'swarm.create',
                 resource: `swarm:${swarmRequest.name || context.taskId}`,
+                capabilities: ['swarm:create'],
+                timestamp: Date.now(),
                 subject: context.sessionId,
-                context: {
+                sessionId: context.sessionId,
+                taskId: context.taskId,
+                metadata: {
                     agentCount: swarmRequest.agents?.length || 0,
-                    orchestration: swarmRequest.orchestration,
+                    orchestration: swarmRequest.orchestration
                 }
             });
             if (!policyCheck.allowed) {
@@ -130,10 +134,11 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
             const scheduleResult = await this.scheduler.schedule(agents.map((agent, idx) => ({
                 id: `task-${agent}-${idx}`,
                 name: agent,
+                action: 'execute',
                 dependencies: dependencies
                     .filter(d => d.to === agent)
                     .map(d => `task-${d.from}-${agents.indexOf(d.from)}`),
-                priority: 'normal',
+                priority: 1,
                 payload: { agent, context }
             })));
             const duration = Date.now() - startTime;
