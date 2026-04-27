@@ -2,6 +2,8 @@ import { SubAgent } from '../core/SubAgent.js';
 import { SubAgentConfig, TaskContext, SubAgentResult } from '../types/index.js';
 import { PolicyEngine, getPolicyEngine } from '../core/PolicyEngine.js';
 import { TelemetryManager, getTelemetryManager } from '../core/TelemetryManager.js';
+import { contextRouter, type RoutingDecision } from '../advanced/context_routing.js';
+import { updateRoutingWeights } from '../utils/routing-feedback.js';
 
 /**
  * sin_delegate - Delegates tasks to appropriate subagents
@@ -10,16 +12,18 @@ import { TelemetryManager, getTelemetryManager } from '../core/TelemetryManager.
  * - Telemetry tracking for routing metrics
  * - Session-aware load balancing
  * - Zero-Trust delegation
+ * - Context-Aware AST-based routing
+ * - Feedback loop for continuous improvement
  */
 export class SinDelegate extends SubAgent {
   private policyEngine: PolicyEngine;
   private telemetry: TelemetryManager;
-
+  
   constructor() {
     super({
       name: 'sin_delegate',
-      description: 'Delegates and routes tasks to appropriate subagents with policy enforcement',
-      capabilities: ['task-routing', 'delegation', 'load-balancing', 'policy-enforcement'],
+      description: 'Delegates and routes tasks to appropriate subagents with policy enforcement and context-aware routing',
+      capabilities: ['task-routing', 'delegation', 'load-balancing', 'policy-enforcement', 'context-analysis'],
       priority: 1,
     });
     
@@ -37,7 +41,7 @@ export class SinDelegate extends SubAgent {
         return this.error('Invalid input for delegation');
       }
 
-      const task = input as { type?: string; target?: string; payload?: unknown };
+      const task = input as { type?: string; target?: string; payload?: unknown; code?: string; filePath?: string };
 
       // Policy check for delegation
       const policyCheck = await this.policyEngine.evaluate({
@@ -56,7 +60,6 @@ export class SinDelegate extends SubAgent {
       if (!policyCheck.allowed) {
         this.telemetry.recordEvent('delegate_policy_violation', {
           sessionId: context.sessionId,
-  
           reason: policyCheck.reason
         });
         
@@ -65,103 +68,168 @@ export class SinDelegate extends SubAgent {
         });
       }
 
-      // Analyze task and route appropriately
+      // Analyze task with context-aware routing
       const startTime = Date.now();
-      const routing = this.analyzeTask(task);
+      let routing: RoutingDecision;
+      
+      // Use AST-based context routing if code is provided
+      if (task.code || task.filePath) {
+        routing = await this.analyzeWithContext(task);
+      } else {
+        routing = this.analyzeTask(task);
+      }
+      
       const duration = Date.now() - startTime;
 
       // Record routing decision
       this.telemetry.recordEvent('delegate_routing_decision', {
         sessionId: context.sessionId,
-
-        targetType: routing.targetType,
+        targetType: routing.agentId,
         confidence: routing.confidence,
-        suggestedAgents: routing.suggestedAgents,
+        suggestedAgents: routing.alternativeAgents,
+        reason: routing.reason,
         duration
       });
 
+      // Store routing context for feedback loop
+      const routingContext = {
+        taskId: context.taskId,
+        sessionId: context.sessionId,
+        routedTo: routing.agentId,
+        timestamp: Date.now()
+      };
+      
       return this.success({
         routed: true,
-        targetType: routing.targetType,
+        targetType: routing.agentId,
         confidence: routing.confidence,
-        suggestedAgents: routing.suggestedAgents,
-        policyApproved: true
+        suggestedAgents: [routing.agentId, ...routing.alternativeAgents],
+        policyApproved: true,
+        reason: routing.reason,
+        routingContext
       }, {
-
         sessionId: context.sessionId,
         routingDuration: duration
       });
     });
   }
 
+  /**
+   * Context-aware routing using AST analysis
+   */
+  private async analyzeWithContext(task: { type?: string; target?: string; payload?: unknown; code?: string; filePath?: string }): Promise<RoutingDecision> {
+    const code = task.code || '';
+    const filePath = task.filePath || 'unknown.ts';
+    
+    // Analyze code with context router
+    const routingContext = contextRouter.analyzeCode(filePath, code);
+    
+    // Get routing decision from context router
+    const decision = contextRouter.routeTask(routingContext);
+    
+    this.telemetry.recordEvent('context_routing_analysis', {
+      taskType: routingContext.taskType,
+      complexity: routingContext.complexity,
+      symbolsCount: routingContext.symbols.length,
+      dependenciesCount: routingContext.dependencies.length
+    });
+    
+    return decision;
+  }
+
+  /**
+   * Legacy task analysis based on keywords
+   */
   private analyzeTask(task: { type?: string; target?: string; payload?: unknown }): {
-    targetType: string;
+    agentId: string;
     confidence: number;
-    suggestedAgents: string[];
+    reason: string;
+    alternativeAgents: string[];
   } {
     const type = task.type?.toLowerCase() || '';
 
     if (type.includes('git') || type.includes('commit') || type.includes('branch')) {
       return {
-        targetType: 'git',
+        agentId: 'sin_git_orchestrator',
         confidence: 0.95,
-        suggestedAgents: ['sin_git_orchestrator', 'sin_git_conflict_resolver', 'sin_git_policy_enforcer'],
+        reason: 'Git-related task detected',
+        alternativeAgents: ['sin_git_conflict_resolver', 'sin_git_policy_enforcer']
       };
     }
 
     if (type.includes('health') || type.includes('monitor') || type.includes('telemetry')) {
       return {
-        targetType: 'health',
+        agentId: 'sin_health_server',
         confidence: 0.9,
-        suggestedAgents: ['sin_health_server', 'sin_monitor', 'telemetry_manager'],
+        reason: 'Health monitoring task detected',
+        alternativeAgents: ['sin_monitor', 'telemetry_manager']
       };
     }
 
     if (type.includes('edit') || type.includes('modify')) {
       return {
-        targetType: 'edit',
+        agentId: 'sin_hash_edit',
         confidence: 0.85,
-        suggestedAgents: ['sin_hash_edit'],
+        reason: 'Code edit task detected',
+        alternativeAgents: ['sin_swarm']
       };
     }
 
     if (type.includes('research') || type.includes('analyze')) {
       return {
-        targetType: 'research',
+        agentId: 'athena',
         confidence: 0.88,
-        suggestedAgents: ['athena', 'argus', 'daedalus'],
+        reason: 'Research task detected',
+        alternativeAgents: ['argus', 'daedalus']
       };
     }
 
     if (type.includes('plan') || type.includes('strategy')) {
       return {
-        targetType: 'planning',
+        agentId: 'prometheus',
         confidence: 0.87,
-        suggestedAgents: ['prometheus', 'metis', 'themis'],
+        reason: 'Planning task detected',
+        alternativeAgents: ['metis', 'themis']
       };
     }
 
     if (type.includes('validate') || type.includes('verify') || type.includes('test')) {
       return {
-        targetType: 'validation',
+        agentId: 'zeus',
         confidence: 0.92,
-        suggestedAgents: ['zeus', 'aegis', 'hephaestus'],
+        reason: 'Validation task detected',
+        alternativeAgents: ['aegis', 'hephaestus']
       };
     }
 
     if (type.includes('execute') || type.includes('deploy') || type.includes('run')) {
       return {
-        targetType: 'execution',
+        agentId: 'atlas',
         confidence: 0.89,
-        suggestedAgents: ['atlas', 'iris', 'janus'],
+        reason: 'Execution task detected',
+        alternativeAgents: ['iris', 'janus']
       };
     }
 
     return {
-      targetType: 'general',
+      agentId: 'sin_swarm',
       confidence: 0.5,
-      suggestedAgents: ['sin_swarm'],
+      reason: 'General task - no specific pattern matched',
+      alternativeAgents: []
     };
+  }
+
+  /**
+   * Report task completion for feedback loop
+   */
+  async reportTaskCompletion(taskId: string, sessionId: string, agentId: string, success: boolean): Promise<void> {
+    await updateRoutingWeights(sessionId, agentId, success);
+    this.telemetry.recordEvent('task_completion_reported', {
+      taskId,
+      sessionId,
+      agentId,
+      success
+    });
   }
 
   /**
