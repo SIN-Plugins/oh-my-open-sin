@@ -48,19 +48,15 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                 agentId: context.sessionId,
                 action: 'swarm.create',
                 resource: `swarm:${swarmRequest.name || context.taskId}`,
-                capabilities: ['swarm', 'orchestrate'],
-                timestamp: Date.now(),
                 subject: context.sessionId,
                 context: {
                     agentCount: swarmRequest.agents?.length || 0,
                     orchestration: swarmRequest.orchestration,
-                    workspace: context.workspace
                 }
             });
             if (!policyCheck.allowed) {
                 this.telemetry.recordEvent('swarm_policy_violation', {
                     sessionId: context.sessionId,
-                    taskId: context.taskId,
                     reason: policyCheck.reason
                 });
                 return this.error(`Swarm creation blocked by policy: ${policyCheck.reason}`, {
@@ -86,7 +82,6 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                 this.telemetry.recordEvent('swarm_created', {
                     swarmId: config.name,
                     sessionId: context.sessionId,
-                    taskId: context.taskId,
                     agentCount: config.agents.length,
                     orchestration: config.orchestration
                 });
@@ -108,7 +103,6 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                     policyApproved: true,
                     duration
                 }, {
-                    taskId: context.taskId,
                     sessionId: context.sessionId,
                     swarmCreationDuration: duration
                 });
@@ -117,7 +111,6 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                 this.telemetry.recordEvent('swarm_creation_error', {
                     swarmId: config.name,
                     sessionId: context.sessionId,
-                    taskId: context.taskId,
                     error: error instanceof Error ? error.message : 'Unknown error'
                 });
                 throw error;
@@ -133,27 +126,19 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
     async createDagSwarm(context, agents, dependencies) {
         const startTime = Date.now();
         try {
-            // Add tasks to scheduler first
-            for (const [idx, agent] of agents.entries()) {
-                const taskId = `task-${agent}-${idx}`;
-                const deps = dependencies
+            // Schedule tasks with DAG
+            const scheduleResult = await this.scheduler.schedule(agents.map((agent, idx) => ({
+                id: `task-${agent}-${idx}`,
+                name: agent,
+                dependencies: dependencies
                     .filter(d => d.to === agent)
-                    .map(d => `task-${d.from}-${agents.indexOf(d.from)}`);
-                this.scheduler.addTask({
-                    id: taskId,
-                    name: agent,
-                    action: 'execute_agent_task',
-                    dependencies: deps,
-                    priority: 5,
-                    payload: { agent, context }
-                });
-            }
-            // Now schedule all tasks
-            const scheduleResult = await this.scheduler.schedule();
+                    .map(d => `task-${d.from}-${agents.indexOf(d.from)}`),
+                priority: 'normal',
+                payload: { agent, context }
+            })));
             const duration = Date.now() - startTime;
             this.telemetry.recordEvent('swarm_dag_scheduled', {
                 sessionId: context.sessionId,
-                taskId: context.taskId,
                 taskCount: agents.length,
                 dependencyCount: dependencies.length,
                 duration
@@ -162,14 +147,13 @@ class SinSwarm extends SubAgent_js_1.SubAgent {
                 scheduled: true,
                 taskId: scheduleResult.executionId,
                 taskCount: agents.length,
-                parallelGroups: scheduleResult.parallelGroups?.length || 0,
+                parallelGroups: scheduleResult.parallelGroups.length,
                 estimatedDuration: scheduleResult.estimatedDuration
             });
         }
         catch (error) {
             this.telemetry.recordEvent('swarm_dag_error', {
                 sessionId: context.sessionId,
-                taskId: context.taskId,
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
             return this.error(`DAG scheduling failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

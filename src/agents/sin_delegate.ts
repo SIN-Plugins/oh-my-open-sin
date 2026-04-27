@@ -44,16 +44,19 @@ export class SinDelegate extends SubAgent {
         agentId: context.sessionId,
         action: 'delegate.route',
         resource: `task:${context.taskId}`,
-        capabilities: ['delegate', 'route'],
+        capabilities: ['delegate:route'],
         timestamp: Date.now(),
         subject: context.sessionId,
-        context: { taskType: task.type, workspace: context.workspace }
+        taskType: task.type,
+        workspace: context.workspace,
+        sessionId: context.sessionId,
+        taskId: context.taskId
       });
 
       if (!policyCheck.allowed) {
         this.telemetry.recordEvent('delegate_policy_violation', {
           sessionId: context.sessionId,
-          taskId: context.taskId,
+  
           reason: policyCheck.reason
         });
         
@@ -70,7 +73,7 @@ export class SinDelegate extends SubAgent {
       // Record routing decision
       this.telemetry.recordEvent('delegate_routing_decision', {
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         targetType: routing.targetType,
         confidence: routing.confidence,
         suggestedAgents: routing.suggestedAgents,
@@ -84,7 +87,7 @@ export class SinDelegate extends SubAgent {
         suggestedAgents: routing.suggestedAgents,
         policyApproved: true
       }, {
-        taskId: context.taskId,
+
         sessionId: context.sessionId,
         routingDuration: duration
       });

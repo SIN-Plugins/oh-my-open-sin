@@ -86,10 +86,12 @@ export class AgentOrchestrator {
       agentId: context.sessionId,
       action: 'agent.execute',
       resource: `agent:${agentName}`,
-      capabilities: ['execute'],
+      capabilities: ['agent:execute'],
       timestamp: Date.now(),
       subject: context.sessionId,
-      context: { taskId: context.taskId, workspace: context.workspace }
+      sessionId: context.sessionId,
+      taskId: context.taskId,
+      agent_type: agentName
     });
     
     if (!policyCheck.allowed) {
@@ -120,8 +122,8 @@ export class AgentOrchestrator {
       this.sendMessage({
         from: 'orchestrator',
         to: agentName,
-        type: 'progress',
-        payload: { context, input, status: 'queued' },
+        type: 'request',
+        payload: { context, input, queued: true },
         timestamp: Date.now()
       });
       
@@ -148,7 +150,7 @@ export class AgentOrchestrator {
       this.telemetry.recordEvent('agent_execution_complete', {
         agent: agentName,
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         success: result.success,
         duration
       });
@@ -156,7 +158,7 @@ export class AgentOrchestrator {
       // Publish result to message bus
       await this.messageBus.publish('agent.results', {
         agent: agentName,
-        taskId: context.taskId,
+
         result,
         timestamp: Date.now()
       });
@@ -169,7 +171,7 @@ export class AgentOrchestrator {
       this.telemetry.recordEvent('agent_execution_error', {
         agent: agentName,
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         error: error instanceof Error ? error.message : 'Unknown error',
         duration
       });
@@ -207,7 +209,7 @@ export class AgentOrchestrator {
       // Record swarm complete
       this.telemetry.recordEvent('swarm_execution_complete', {
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         resultsCount: results.length,
         successCount: results.filter(r => r.success).length
       });
@@ -226,7 +228,7 @@ export class AgentOrchestrator {
       
       this.telemetry.recordEvent('swarm_execution_complete', {
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         resultsCount: results.length,
         successCount: results.filter(r => r.success).length
       });
@@ -238,7 +240,7 @@ export class AgentOrchestrator {
       
       this.telemetry.recordEvent('swarm_execution_complete', {
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         resultsCount: results.length,
         successCount: results.filter(r => r.success).length
       });

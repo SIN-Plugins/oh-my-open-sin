@@ -58,20 +58,21 @@ export class SinSwarm extends SubAgent {
         agentId: context.sessionId,
         action: 'swarm.create',
         resource: `swarm:${swarmRequest.name || context.taskId}`,
-        capabilities: ['swarm', 'orchestrate'],
+        capabilities: ['swarm:create'],
         timestamp: Date.now(),
         subject: context.sessionId,
-        context: { 
+        sessionId: context.sessionId,
+        taskId: context.taskId,
+        metadata: {
           agentCount: swarmRequest.agents?.length || 0,
-          orchestration: swarmRequest.orchestration,
-          workspace: context.workspace
+          orchestration: swarmRequest.orchestration
         }
       });
 
       if (!policyCheck.allowed) {
         this.telemetry.recordEvent('swarm_policy_violation', {
           sessionId: context.sessionId,
-          taskId: context.taskId,
+  
           reason: policyCheck.reason
         });
         
@@ -102,7 +103,7 @@ export class SinSwarm extends SubAgent {
         this.telemetry.recordEvent('swarm_created', {
           swarmId: config.name,
           sessionId: context.sessionId,
-          taskId: context.taskId,
+  
           agentCount: config.agents.length,
           orchestration: config.orchestration
         });
@@ -127,7 +128,7 @@ export class SinSwarm extends SubAgent {
           policyApproved: true,
           duration
         }, {
-          taskId: context.taskId,
+  
           sessionId: context.sessionId,
           swarmCreationDuration: duration
         });
@@ -135,7 +136,7 @@ export class SinSwarm extends SubAgent {
         this.telemetry.recordEvent('swarm_creation_error', {
           swarmId: config.name,
           sessionId: context.sessionId,
-          taskId: context.taskId,
+  
           error: error instanceof Error ? error.message : 'Unknown error'
         });
         
@@ -157,31 +158,23 @@ export class SinSwarm extends SubAgent {
     const startTime = Date.now();
     
     try {
-      // Add tasks to scheduler first
-      for (const [idx, agent] of agents.entries()) {
-        const taskId = `task-${agent}-${idx}`;
-        const deps = dependencies
+      // Schedule tasks with DAG
+      const scheduleResult = await this.scheduler.schedule(agents.map((agent, idx) => ({
+        id: `task-${agent}-${idx}`,
+        name: agent,
+        action: 'execute',
+        dependencies: dependencies
           .filter(d => d.to === agent)
-          .map(d => `task-${d.from}-${agents.indexOf(d.from)}`);
-        
-        this.scheduler.addTask({
-          id: taskId,
-          name: agent,
-          action: 'execute_agent_task',
-          dependencies: deps,
-          priority: 5,
-          payload: { agent, context }
-        });
-      }
-      
-      // Now schedule all tasks
-      const scheduleResult = await this.scheduler.schedule();
+          .map(d => `task-${d.from}-${agents.indexOf(d.from)}`),
+        priority: 1,
+        payload: { agent, context }
+      })));
 
       const duration = Date.now() - startTime;
 
       this.telemetry.recordEvent('swarm_dag_scheduled', {
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         taskCount: agents.length,
         dependencyCount: dependencies.length,
         duration
@@ -191,13 +184,13 @@ export class SinSwarm extends SubAgent {
         scheduled: true,
         taskId: scheduleResult.executionId,
         taskCount: agents.length,
-        parallelGroups: scheduleResult.parallelGroups?.length || 0,
+        parallelGroups: scheduleResult.parallelGroups.length,
         estimatedDuration: scheduleResult.estimatedDuration
       });
     } catch (error) {
       this.telemetry.recordEvent('swarm_dag_error', {
         sessionId: context.sessionId,
-        taskId: context.taskId,
+
         error: error instanceof Error ? error.message : 'Unknown error'
       });
       

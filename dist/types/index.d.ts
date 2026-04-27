@@ -24,8 +24,17 @@ export interface TaskContext {
     metadata?: Record<string, unknown>;
     task?: {
         id: string;
-        [key: string]: any;
+        description: string;
+        priority?: number;
     };
+}
+export interface PolicyContext {
+    agentName: string;
+    action: string;
+    sessionId?: string;
+    taskId?: string;
+    allowed?: boolean;
+    reason?: string;
 }
 export interface AgentMessage {
     type: 'request' | 'response' | 'error' | 'progress';

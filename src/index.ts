@@ -130,6 +130,7 @@ export {
 
 // Telemetry & Monitoring
 export {
+  TelemetryManager,
   PrometheusExporter,
   GrafanaDashboardGenerator,
   FleetSync,
@@ -298,7 +299,7 @@ export {
   evaluateConstraints,
   enforceGravityPolicy,
   dispatchCrossPlanet,
-  type RouteDecisionExport as RouteDecision,
+  type RouteDecision,
   type GravityPolicy
 } from './bin/sin-planet-router.js';
 

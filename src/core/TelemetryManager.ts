@@ -17,13 +17,14 @@ import { trace, metrics, context, propagation, Span, SpanStatusCode, MetricOptio
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { TaskContext, SubAgentResult } from '../types/index.js';
 
-// Resource constructor for OpenTelemetry
-function createResource(attributes: Record<string, any>): any {
-  return { attributes };
-}
+// Type-safe Resource constructor
+const createResource = (attributes: Record<string, string | number | boolean>) => {
+  return resourceFromAttributes(attributes);
+};
 
 export interface SLOConfig {
   name: string;

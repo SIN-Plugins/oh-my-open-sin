@@ -18,13 +18,21 @@ export interface PolicyContext {
     timestamp: number;
     metadata?: Record<string, any>;
     subject?: string;
-    context?: Record<string, any>;
+    taskType?: string;
+    workspace?: string;
+    taskId?: string;
+    sessionId?: string;
+    agent_type?: string;
 }
 export interface PolicyDecision {
     allowed: boolean;
     reason?: string;
     obligations?: string[];
     advice?: string[];
+    violations?: Array<{
+        message: string;
+        ruleId: string;
+    }>;
 }
 export interface PolicyRule {
     id: string;

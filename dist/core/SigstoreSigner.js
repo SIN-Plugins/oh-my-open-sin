@@ -39,7 +39,8 @@ class SigstoreSigner extends events_1.EventEmitter {
             signature,
             timestamp: Date.now(),
             verified: true,
-            rekorEntryId: `rekor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            rekorEntryId: `rekor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            transparencyLogId: `tlog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         };
         // Store signed artifact
         const artifact = {

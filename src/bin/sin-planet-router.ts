@@ -21,7 +21,7 @@ interface RouteDecision {
   confidence: number;
 }
 
-export interface GravityPolicy {
+interface GravityPolicy {
   allowed_domains: string[];
   max_budget_pct: number;
   max_risk_score: number;
@@ -29,8 +29,6 @@ export interface GravityPolicy {
   network_scope: "allow" | "deny";
   exec_scope: "sandbox" | "none";
 }
-
-export interface RouteDecisionExport extends RouteDecision {}
 
 // ─── HELPERS ────────────────────────────────────────────────────────────
 function safeRun(cmd: string, cwd = process.cwd()): { ok: boolean; out: string; err?: string } {

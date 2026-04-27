@@ -305,11 +305,12 @@ class CRDTStateStore {
      * Get statistics
      */
     getStats() {
-        const update = Y.encodeStateAsUpdate(this.doc);
+        const docState = Y.encodeStateAsUpdate(this.doc);
+        const _docState = Y.encodeStateAsUpdate(this.doc);
         return {
             eventCount: this.events.length,
             stateKeys: Array.from(this.state.keys()).length,
-            docSize: update.length,
+            docSize: docState.length,
             pendingTransactions: this.pendingTransactions.length
         };
     }

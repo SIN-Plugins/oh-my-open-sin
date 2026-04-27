@@ -30,7 +30,7 @@ export { SinRouteDebug, sinRouteDebug } from './tools/sin-route-debug.js';
 export { HealthServer } from './health/HealthServer.js';
 export { DynamicSkillInjector, skillInjector, ContextAwareRouter, contextRouter, SelfHealingExecutor, selfHealingExecutorInstance as selfHealingExecutor, MultiModalVerifier, StateCheckpointManager, AdvancedFeatures } from './advanced/features.js';
 export { SinHashEdit, sinHashEdit, type HashEdit, type HashEditResult, type FileSection, CLI_HELP as HASH_EDIT_CLI_HELP } from './tools/sin_hash_edit.js';
-export { PrometheusExporter, GrafanaDashboardGenerator, FleetSync, TelemetryModule, type TelemetryEvent, type AgentMetrics, type FleetNode } from './advanced/telemetry.js';
+export { TelemetryManager, PrometheusExporter, GrafanaDashboardGenerator, FleetSync, TelemetryModule, type TelemetryEvent, type AgentMetrics, type FleetNode } from './advanced/telemetry.js';
 export { createCheckpoint, restoreCheckpoint, rollbackPartial, cleanupCheckpoints, type CheckpointMeta } from './utils/checkpoint-manager-v2.js';
 export { classifyFailureV2, type FailureType, type RootCause, type FailureAnalysis } from './utils/failure-classifier-v2.js';
 export { STRATEGY_MAP, runLspAutoFix, runDepReinstall, runTestDebugRerun, runScopeSplit, type StrategyResult } from './utils/healing-strategies.js';
@@ -51,7 +51,7 @@ export { loadFabricState, saveFabricState, safeRun, BudgetAllocator, RiskControl
 export { SinFabricWorldSync, sinFabricWorldSync, discoverFleet, reconcileBlackboard, aggregateAuditChains, propagatePatterns, broadcastToFleet } from './tools/sin-fabric-world-sync.js';
 export { SinFabricWorldInit, sinFabricWorldInit, initDirectories, initAuditChain, initPatternSeed, initFleetSSH, initDashboardAutoStart } from './tools/sin-fabric-world-init.js';
 export { SinFabricDashboard, sinFabricDashboard } from './tools/sin-fabric-dashboard.js';
-export { analyzeDomain, evaluateConstraints, enforceGravityPolicy, dispatchCrossPlanet, type RouteDecisionExport as RouteDecision, type GravityPolicy } from './bin/sin-planet-router.js';
+export { analyzeDomain, evaluateConstraints, enforceGravityPolicy, dispatchCrossPlanet, type RouteDecision, type GravityPolicy } from './bin/sin-planet-router.js';
 export { aggregateTelemetry, macroConsensus, gravitationalRoute, supernovaFallback, type ClusterHealth, type ConsensusVote, type TelemetryAggregate, type RoutingDecision, type FallbackPlan } from './bin/sin-galaxy-core.js';
 export { loadJSON as loadGalaxyManifest, SinGalaxyManifestGen } from './bin/sin-galaxy-manifest-gen.js';
 export { PolicyEngine, getPolicyEngine, type PolicyContext, type PolicyDecision, type PolicyRule } from './core/PolicyEngine.js';

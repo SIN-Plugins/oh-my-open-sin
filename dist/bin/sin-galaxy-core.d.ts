@@ -1,5 +1,5 @@
 #!/usr/bin/env tsx
-export interface ClusterHealth {
+interface ClusterHealth {
     id: string;
     domain: string;
     health: number;
@@ -9,13 +9,13 @@ export interface ClusterHealth {
     active_tasks: number;
     status: "healthy" | "degraded" | "critical" | "offline";
 }
-export interface ConsensusVote {
+interface ConsensusVote {
     cluster_id: string;
     decision: string;
     confidence: number;
     ts: number;
 }
-export interface TelemetryAggregate {
+interface TelemetryAggregate {
     total_tokens: number;
     total_cost_usd: number;
     avg_health: number;
@@ -24,14 +24,14 @@ export interface TelemetryAggregate {
     budget_remaining_pct: number;
     ts: number;
 }
-export interface RoutingDecision {
+interface RoutingDecision {
     target_cluster: string;
     score: number;
     status: "allow" | "throttle" | "reroute" | "block";
     reason: string;
     budget_allocated: number;
 }
-export interface FallbackPlan {
+interface FallbackPlan {
     triggered: boolean;
     reason: string;
     action: "scope_reduce" | "model_downgrade" | "emergency_consensus" | "sub_galaxy_spawn";
@@ -53,4 +53,5 @@ export declare function supernovaFallback(state: any, telemetry: TelemetryAggreg
     health: number;
     latency_ms: number;
 }): Promise<FallbackPlan>;
+export {};
 //# sourceMappingURL=sin-galaxy-core.d.ts.map
